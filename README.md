@@ -6,6 +6,11 @@
 
 DQMJ2 Randomizer is a tool made in Python  that allows you to randomize monsters encounter in Dragon Quest Monster Joker 2.This only works for EU (European) versions of the game.
 
+## Requirements
+
+This tool needs Python 3.11.4 at least in order to run!
+Also for now it only works with EU versions of DQMJ2.
+
 ## Installing the randomizer
 
 1. In a folder of your choice,open a CMD and type:
