@@ -2,7 +2,7 @@ import random
 import struct
 import os
 
-def randomize_and_patch(seed=None, filters=None):
+def randomize_and_patch(seed=None, filters=None,mods=None):
     # --- CONFIGURATION ---
     input_bin = "BtlEnmyPrm2.bin"      # Original .bin file extracted from the ROM
     rom_original = "temp_uploads/dqmj2.nds"      # Original ROM (must match the one used to extract the .bin,will be removerd in the future for security reasons)
@@ -41,9 +41,10 @@ def randomize_and_patch(seed=None, filters=None):
         print("No monsters available! Raising Exception")
         raise Exception("no monsters")
     base_pool = [entries[i] for i in valid_indices]
-
+    base_pool=mod_pool(base_pool,mods)
+    
     pool=list(base_pool)
-        
+
     while len(pool)<1400:
         pool.append(random.choice(base_pool))
     random.shuffle(pool)
@@ -83,6 +84,27 @@ def randomize_and_patch(seed=None, filters=None):
     print(f"Processing completed! New ROM created : {rom_output}")
     if seed:
         print(f"Seed used : {seed}")
+
+#altering the pool by modifying it's data (used for challenges)
+def mod_pool(pool,mods):
+    new_pool=pool.copy()
+    for mod in mods:
+        if mod=="no_flee":
+            for i,monster in enumerate(new_pool):
+                new_pool[i]=monster[:98]+bytes([0x02])+monster[99:]
+        if mod=="150%_stats":
+            for i,monster in enumerate(new_pool):
+                HP  = min(int(struct.unpack("<H", monster[48:50])[0] * 1.5), 9999)
+                MP  = min(int(struct.unpack("<H", monster[50:52])[0] * 1.5), 9999)
+                ATK = min(int(struct.unpack("<H", monster[52:54])[0] * 1.5), 9999)
+                DEF = min(int(struct.unpack("<H", monster[54:56])[0] * 1.5), 9999)
+                AGI = min(int(struct.unpack("<H", monster[56:58])[0] * 1.5), 9999)
+                WIS = min(int(struct.unpack("<H", monster[58:60])[0] * 1.5), 9999)
+
+                stats_pack = struct.pack("<6H", HP, MP, ATK, DEF, AGI, WIS)
+                new_pool[i] = monster[:48] + stats_pack + monster[60:]
+    return new_pool
+
 
 
 def filter_monsters(id_indices,filters=None):
