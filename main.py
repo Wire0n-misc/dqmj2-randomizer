@@ -10,6 +10,8 @@ import asyncio
 UPLOAD_DIR = Path(__file__).parent / 'temp_uploads'
 UPLOAD_DIR.mkdir(exist_ok=True)
 
+output_dir= Path(__file__).parent / 'output'
+
 filters={}
 seed={"seed":0}
 mods={"mods":[]}
@@ -101,6 +103,9 @@ def root():
             background: #fc7e0f !important;
             opacity: 1 !important;
         }
+    .dqmj2-checkbox{
+                     
+                     }
     </style>
     ''')
     ui.query('body').style('background: radial-gradient(#bfbfbf, #636363); height: 100vh;')
@@ -157,6 +162,8 @@ def root():
 
         
     with ui.card().style("background:#5a5a5a;border-color: #bdbdbd;border-style: solid;border-width: 2px;width: 100%").classes('dqmj2-font'):
-        ui.button("Randomize!", on_click=lambda: try_randomization()).classes('w-full text-white custom-btn').style("background: #105aad;")
+        with ui.row().classes("w-full"):
+            ui.button("Randomize!", on_click=lambda: try_randomization()).classes('flex-1 text-white custom-btn').style("background: #105aad;")
+            ui.button("Open output folder",on_click=lambda: os.startfile(output_dir)).classes("w-1/4")
 
 ui.run(root,reload=False)
