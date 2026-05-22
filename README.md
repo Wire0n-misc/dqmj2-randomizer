@@ -11,7 +11,7 @@ DQMJ2 Randomizer is a tool made in Python  that allows you to randomize monsters
 This tool needs Python 3.11.4 at least in order to run!
 Also for now it only works with EU versions of DQMJ2.
 
-## Installing the randomizer
+## Installing and running the randomizer
 
 1. In a folder of your choice,open a CMD and type:
    
@@ -45,6 +45,4 @@ Also for now it only works with EU versions of DQMJ2.
 
 ## Important notes
 
-1. Ability to flee a battle is directly bind to monsters themselves.So it is possible that you can't escape a fight because of a boss or special monster present in battle.I'll adress this issue soon.
-
-2. In most cases, even if big monsters overlap other slots, it isn't an issue since the game can handle it, despite being a visual mess. But there is a few cases where a specific configuration might be problematic because when you're attacking enemies the game will crash.I noticed that when it happens there is always a giant monster involved. Hopefully I found a turnaround : battling with only one monster will give game enough memory space to not crash.
+Ability to flee a battle is directly bind to monsters themselves.So it is possible that you can't escape a fight because of a boss or special monster present in battle.I'll adress this issue soon.

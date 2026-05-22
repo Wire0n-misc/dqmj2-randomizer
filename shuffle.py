@@ -89,7 +89,7 @@ def randomize_and_patch(seed=None, filters=None,mods=None):
 def mod_pool(pool,mods):
     new_pool=pool.copy()
     for mod in mods:
-        if mod=="no_flee":
+        if mod=="no_flee" and "always_flee" not in mods:
             for i,monster in enumerate(new_pool):
                 new_pool[i]=monster[:98]+bytes([0x02])+monster[99:]
         if mod=="150%_stats":
@@ -103,6 +103,9 @@ def mod_pool(pool,mods):
 
                 stats_pack = struct.pack("<6H", HP, MP, ATK, DEF, AGI, WIS)
                 new_pool[i] = monster[:48] + stats_pack + monster[60:]
+        if mod=="always_flee":
+            for i,monster in enumerate(new_pool):
+                new_pool[i]=monster[:98]+bytes([0x00])+monster[99:]
     return new_pool
 
 

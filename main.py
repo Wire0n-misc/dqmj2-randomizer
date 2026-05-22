@@ -14,7 +14,7 @@ output_dir= Path(__file__).parent / 'output'
 
 filters={}
 seed={"seed":0}
-mods={"mods":[]}
+mods={"mods":["always_flee"]}
 def change_filter(key,value):
     if key in filters:
         if value in filters[key]:
@@ -126,6 +126,7 @@ def root():
             challenges = ui.tab('Challenges')
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
             with ui.tab_panel(monsters):
+                ui.checkbox("Allow flee for all battles", value=True, on_change=lambda e: change_mods("always_flee"))
                 with ui.expansion('Filter Ranks', icon='font_download',caption="Include or exclude monster ranks you want").classes('w-full section-banner text-white rounded'):
                     with ui.row().classes('w-full'):
                         ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???"))
