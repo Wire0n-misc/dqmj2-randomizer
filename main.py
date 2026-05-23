@@ -12,13 +12,15 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 output_dir= Path(__file__).parent / 'output'
 
-filters={}
+filters={"special":["no_arena_monsters"]}
 seed={"seed":0}
 mods={"mods":["always_flee"]}
 def change_filter(key,value):
     if key in filters:
         if value in filters[key]:
             filters[key].remove(value)
+            if len(filters[key])==0:
+                filters.pop(key,None)
         else:
             filters[key].append(value)
     else:
@@ -126,7 +128,10 @@ def root():
             challenges = ui.tab('Challenges')
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
             with ui.tab_panel(monsters):
-                ui.checkbox("Allow flee for all battles", value=True, on_change=lambda e: change_mods("always_flee"))
+                with ui.checkbox("Allow Flee and Scout for all battles", value=True, on_change=lambda e: change_mods("always_flee")):
+                    ui.tooltip("Make Flee and Scout options always available,even in boss fights").classes("bg-cyan")
+                with ui.checkbox("Remove 0 XP monsters (such as arena monsters)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")):
+                     ui.tooltip("Remove special monster such as arena monsters giving 0 XP and sometime 0 Gold").classes("bg-cyan")
                 with ui.expansion('Filter Ranks', icon='font_download',caption="Include or exclude monster ranks you want").classes('w-full section-banner text-white rounded'):
                     with ui.row().classes('w-full'):
                         ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???"))
@@ -156,8 +161,10 @@ def root():
                         ui.checkbox("Medium", value=True, on_change=lambda e: change_filter("size","2"))
                         ui.checkbox("Giant", value=True, on_change=lambda e: change_filter("size","3"))
             with ui.tab_panel(challenges):
-                ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee"))
-                ui.checkbox("Stronger monsters (50% stats raise)", value=False, on_change=lambda e: change_mods("150%_stats"))
+                with ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee")):
+                    ui.tooltip("Do not flee anymore! Win or loss is the only way!   This challenge is disabled if \"Allow Flee and Scout for all battles\" is enabled!").classes("bg-cyan")
+                with ui.checkbox("Stronger monsters (50% stats raise)", value=False, on_change=lambda e: change_mods("150%_stats")):
+                    ui.tooltip("Monsters HP,MP,DEF,ATK,AGI and WIS are multiplied by 1.5").classes("bg-cyan")
 
 
 

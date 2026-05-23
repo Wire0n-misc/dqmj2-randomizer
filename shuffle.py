@@ -31,18 +31,19 @@ def randomize_and_patch(seed=None, filters=None,mods=None):
         
     # Filtering monster that have an ID superior to 0
     valid_indices = [i for i, e in enumerate(entries) if struct.unpack("<H", e[0:2])[0] > 0]#623
-        
-    print(f"Monsters with ID : {len(valid_indices)} / {num_entries}")#623/1400
+    print("Possible monsters before user filtering: "+str(len(valid_indices)))
+    #print(f"Monsters with ID : {len(valid_indices)} / {num_entries}")#623/1400
         
     #Advanced filtering based on user input
-    valid_indices=filter_monsters(id_indices=valid_indices, filters=filters)
+    valid_indices=filter_monsters(id_indices=valid_indices, filters=filters,entries=entries)
+    print("Possible monsters after user filtering: "+str(len(valid_indices)))
 
     if len(valid_indices)==0:
         print("No monsters available! Raising Exception")
         raise Exception("no monsters")
     base_pool = [entries[i] for i in valid_indices]
     base_pool=mod_pool(base_pool,mods)
-    
+    print("final possible monsters: "+str(len(base_pool)))
     pool=list(base_pool)
 
     while len(pool)<1400:
@@ -110,7 +111,7 @@ def mod_pool(pool,mods):
 
 
 
-def filter_monsters(id_indices,filters=None):
+def filter_monsters(id_indices,filters=None,entries=None):
     monster_db="valid_monsters.txt"
     with open(monster_db, 'r') as f:
             lines=f.readlines()
@@ -128,6 +129,13 @@ def filter_monsters(id_indices,filters=None):
                 valid_indices=list(set(valid_indices) & set(filtered_indices))
             if key=="size":#exclude following sizes
                 filtered_indices=[int(i.split(",")[0]) for i in lines if i.split(",")[11].strip() not in value]
+                valid_indices=list(set(valid_indices) & set(filtered_indices))
+            if key=="special":#exlude special monsters such as arena monsters
+                filtered_indices=[]
+                for indice in valid_indices:
+                    xp=int(struct.unpack("<2H", entries[indice][40:44])[0])
+                    if xp>0 :
+                        filtered_indices.append(indice)
                 valid_indices=list(set(valid_indices) & set(filtered_indices))
     global_indices=[id_indices[e] for i,e in enumerate(valid_indices)]
     return global_indices
