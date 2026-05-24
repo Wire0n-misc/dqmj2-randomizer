@@ -49,7 +49,7 @@ In most cases, even if big monsters overlap other slots, it isn't an issue since
 
 **What to do if you're stuck then even if you pulled this trick and it doesn't work?**
 
-There is a way to rerandomize the game from this point without lossing your progress if you play on DeSmuMe (a similar technique could be used on different emulator but i haven't tested it):
+There is a way to rerandomize the game from this point without losing your progress if you play on DeSmuMe (a similar technique could be used on different emulator but i haven't tested it):
 
 1. Save you current game by using savestates (choose a slot to save in)
 
@@ -63,4 +63,4 @@ There is a way to rerandomize the game from this point without lossing your prog
 
 6. You can now redo your problematic battle: the monsters will change and it might be possible now without crashing.
 
-If you want to go back to your old rom,then do the same as above and just onvert the two roms.
+If you want to go back to your old rom,then do the same as above and just invert the two roms.
