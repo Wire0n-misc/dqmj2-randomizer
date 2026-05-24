@@ -46,3 +46,21 @@ Also for now it only works with EU versions of DQMJ2.
 ## Important notes
 
 In most cases, even if big monsters overlap other slots, it isn't an issue since the game can handle it, despite being a visual mess. But there is a few cases where a specific configuration might be problematic because when you're attacking enemies the game will crash.I noticed that when it happens there is always a giant monster involved. Hopefully I found a turnaround : battling with only one monster will give game enough memory space to not crash.
+
+**What to do if you're stuck then even if you pulled this trick and it doesn't work?**
+
+There is a way to rerandomize the game from this point without lossing your progress if you play on DeSmuMe (a similar technique could be used on different emulator but i haven't tested it):
+
+1. Save you current game by using savestates (choose a slot to save in)
+
+2. Delete or store the .nds file you're currently using AND take note of the file name(It's very important!).
+
+3. Randomize the game with a different seed.
+
+4. Put the newly randomized .nds rom in the same folder the old one was and rename it EXACTLY like the old one.
+
+5. Start the emulator and load your savestate
+
+6. You can now redo your problematic battle: the monsters will change and it might be possible now without crashing.
+
+If you want to go back to your old rom,then do the same as above and just onvert the two roms.
