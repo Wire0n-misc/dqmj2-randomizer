@@ -23,7 +23,7 @@ Also for now it only works with EU versions of DQMJ2.
    
    Or just download all files by clicking on "<>Code" button and then "Download ZIP"
 
-2. Open DQMJ2_Randomizer.bat
+2. Open DQMJ2_Randomizer_Windows.bat if you are on Windows or DQMJ2_Randomizer_Linux.sh if you are on Linux.
 
 3. Wait for it to open a browser tab or in your browser URL bar type : 127.0.0.1:8080
 
