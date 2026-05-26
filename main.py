@@ -81,6 +81,7 @@ def show_dialog(message):
         ui.button("OK",on_click=dialog.close)
     dialog.open()
 
+@ui.page('/')
 def root():
     app.add_static_files('/static', 'fonts')
     ui.add_head_html(r'''
@@ -173,5 +174,5 @@ def root():
         with ui.row().classes("w-full"):
             ui.button("Randomize!", on_click=lambda: try_randomization()).classes('flex-1 text-white custom-btn').style("background: #105aad;")
             ui.button("Open output folder",on_click=lambda: os.startfile(output_dir)).classes("w-1/4")
-
-ui.run(root,reload=False)
+if __name__ == '__main__':
+    ui.run(reload=False,title="DQMJ2 Randomizer")
