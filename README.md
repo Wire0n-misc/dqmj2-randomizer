@@ -13,11 +13,15 @@ Also for now it only works with EU versions of DQMJ2.
 
 ## Installing and running the randomizer
 
-1. In a folder of your choice,open a CMD and type:
+1. You can either do this:
+   
+   In a folder of your choice,open a CMD and type:
    
    ```
    git clone https://github.com/Wire0n-misc/dqmj2-randomizer.git
    ```
+   
+   Or just download all files by clicking on "<>Code" button and then "Download ZIP"
 
 2. Open DQMJ2_Randomizer.bat
 
