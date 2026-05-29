@@ -133,12 +133,12 @@ def filter_monsters(id_indices,filters=None,entries=None):
             if key=="special":#exlude special monsters such as arena monsters
                 filtered_indices=[]
                 for indice in valid_indices:
-                    xp=int(struct.unpack("<2H", entries[indice][40:44])[0])
+                    xp=int.from_bytes(entries[indice][39:42],byteorder="little")
                     if xp>0 :
                         filtered_indices.append(indice)
+                
                 valid_indices=list(set(valid_indices) & set(filtered_indices))
-    global_indices=[id_indices[e] for i,e in enumerate(valid_indices)]
-    return global_indices
+    return valid_indices
 
 #if __name__ == "__main__":
 #    randomize_and_patch()
