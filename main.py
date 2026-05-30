@@ -130,7 +130,7 @@ def root():
             with ui.tab_panel(monsters).classes("bg-black"):
                 with ui.checkbox("Allow Flee and Scout for all battles", value=True, on_change=lambda e: change_mods("always_flee")).classes(STYLES["dqmj2-button"]):
                     ui.tooltip("Make Flee and Scout options always available,even in boss fights").classes("bg-cyan")
-                with ui.checkbox("Remove 0 XP monsters (such as arena monsters) (temporary disabled)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")).classes(STYLES["dqmj2-button"]).disable():
+                with ui.checkbox("Remove 0 XP monsters (such as arena monsters) (temporary disabled)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")).classes(STYLES["dqmj2-button"]):
                      ui.tooltip("Remove special monster such as arena monsters giving 0 XP and sometime 0 Gold").classes("bg-cyan")
                 with ui.checkbox("Randomize XP (Coming soon)", value=False, on_change=lambda e: change_mods("random_xp")).classes(STYLES["dqmj2-button"]).disable():
                      ui.tooltip("Each monster gives a random amount of XP").classes("bg-cyan")

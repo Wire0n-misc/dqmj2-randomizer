@@ -46,7 +46,7 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
     updateProgress(progress_label,randInfo)#task 3
 
     #Advanced filtering based on user input
-    filtered_indices=filter_monsters(randInfo=randInfo,progress_label=progress_label,entries=entries)
+    filtered_indices=filter_monsters(id_valid_indices,randInfo=randInfo,progress_label=progress_label,entries=entries)
     print("Possible monsters after user filtering: "+str(len(filtered_indices)))
 
     updateProgress(progress_label,randInfo)#task 4
@@ -160,7 +160,7 @@ def mod_pool(pool,randInfo=RandomizationInfo(),progress_label=None):
 
 
 
-def filter_monsters(randInfo=RandomizationInfo(),progress_label=None,entries=None):
+def filter_monsters(id_indices,randInfo=RandomizationInfo(),progress_label=None,entries=None):
     monster_db="valid_monsters.txt"
     with open(monster_db, 'r') as f:
             lines=f.readlines()
@@ -188,7 +188,7 @@ def filter_monsters(randInfo=RandomizationInfo(),progress_label=None,entries=Non
             if key=="special":#exlude special monsters such as arena monsters
                 filtered_indices=[]
                 for indice in valid_indices:
-                    xp=int.from_bytes(entries[indice][39:42],byteorder="little")
+                    xp=int.from_bytes(entries[id_indices[indice]][39:42],byteorder="little")
                     if xp>0 :
                         filtered_indices.append(indice)
                 
@@ -224,3 +224,4 @@ def identify_monster_by_indice(indice):
             print(line)
             return
     print("monster not found")
+
