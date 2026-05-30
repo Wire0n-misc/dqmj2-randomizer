@@ -68,6 +68,14 @@ async def try_randomization():
             show_dialog("ROM randomized successfully in output folder!")
         except Exception as error:
             dialog.close()
+            print(str(error))
+            if str(error)=="no monsters":
+                show_dialog("This configuration leads to no monsters available. Please review your choices!")
+            else:
+                show_dialog("Cannot randomize ROM! Make sure you imported DMQJ2 ROM in its EU version!")
+
+    else:
+        show_dialog("Please import EU DQMJ2 .nds file!")
 
 def show_dialog(message):
     with ui.dialog() as dialog,ui.card().classes("dqmj2-font"):
@@ -122,8 +130,10 @@ def root():
             with ui.tab_panel(monsters).classes("bg-black"):
                 with ui.checkbox("Allow Flee and Scout for all battles", value=True, on_change=lambda e: change_mods("always_flee")).classes(STYLES["dqmj2-button"]):
                     ui.tooltip("Make Flee and Scout options always available,even in boss fights").classes("bg-cyan")
-                with ui.checkbox("Remove 0 XP monsters (such as arena monsters)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")).classes(STYLES["dqmj2-button"]):
+                with ui.checkbox("Remove 0 XP monsters (such as arena monsters) (temporary disabled)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")).classes(STYLES["dqmj2-button"]).disable():
                      ui.tooltip("Remove special monster such as arena monsters giving 0 XP and sometime 0 Gold").classes("bg-cyan")
+                with ui.checkbox("Randomize XP (Coming soon)", value=False, on_change=lambda e: change_mods("random_xp")).classes(STYLES["dqmj2-button"]).disable():
+                     ui.tooltip("Each monster gives a random amount of XP").classes("bg-cyan")
                 with ui.expansion('Filter Ranks', icon='font_download',caption="Include or exclude monster ranks you want").classes('w-full section-banner text-white rounded'):
                     with ui.row().classes('w-full'):
                         ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???")).classes(STYLES["dqmj2-button"])

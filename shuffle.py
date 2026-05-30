@@ -135,6 +135,27 @@ def mod_pool(pool,randInfo=RandomizationInfo(),progress_label=None):
             for i,monster in enumerate(new_pool):
                 new_pool[i]=monster[:98]+bytes([0x00])+monster[99:]
             updateProgress(progress_label,randInfo)
+        if mod == "random_xp":
+            probability_stack = {
+                1: [0.0, 100.0, 0.0, 72.0],
+                2: [100.0, 1000.0, 72.0, 92.0],
+                3: [1000.0, 10000.0, 92.0, 97.0],
+                4: [10000.0, 100000.0, 97.0, 99.0],
+                5: [100000.0, 333333.0, 99.0, 100.0]
+            }
+            
+            for i, monster in enumerate(new_pool):
+                choosed = random.uniform(0.0, 100.0)
+                
+                for key in probability_stack:
+                    interval = probability_stack[key] 
+                    
+                    if choosed > interval[2] and choosed <= interval[3]:
+                        XP = int(random.uniform(interval[0], interval[1]))
+                        new_pool[i] = monster[:39] + XP.to_bytes(3, "little") + monster[42:]
+                        break 
+                        
+            updateProgress(progress_label, randInfo)
     return new_pool
 
 
@@ -173,8 +194,6 @@ def filter_monsters(randInfo=RandomizationInfo(),progress_label=None,entries=Non
                 
                 valid_indices=list(set(valid_indices) & set(filtered_indices))
                 updateProgress(progress_label,randInfo)
-    for i in valid_indices:
-        identify_monster_by_indice(i)
     return valid_indices
 
 
