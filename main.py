@@ -5,6 +5,9 @@ from randomInfo import RandomizationInfo
 import os
 import asyncio
 
+STYLES={
+    "dqmj2-button":"bg-blue-900 text-white rounded-lg border-2 border-black hover:bg-orange-400",
+}
 
 UPLOAD_DIR = Path(__file__).parent / 'temp_uploads'
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -97,9 +100,6 @@ def root():
             background: #fc7e0f !important;
             opacity: 1 !important;
         }
-    .dqmj2-checkbox{
-                     
-                     }
     </style>
     ''')
     ui.query('body').style('background: radial-gradient(#bfbfbf, #636363); height: 100vh;')
@@ -116,46 +116,46 @@ def root():
         if Path("temp_uploads/dqmj2.nds").exists():
                 ui.label("ROM already imported!").classes("text-green")
         with ui.tabs().classes('w-full') as tabs:
-            monsters = ui.tab('Monsters')
-            challenges = ui.tab('Challenges')
+            monsters = ui.tab('Monsters').classes(STYLES["dqmj2-button"])
+            challenges = ui.tab('Challenges').classes(STYLES["dqmj2-button"])
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
-            with ui.tab_panel(monsters):
-                with ui.checkbox("Allow Flee and Scout for all battles", value=True, on_change=lambda e: change_mods("always_flee")):
+            with ui.tab_panel(monsters).classes("bg-black"):
+                with ui.checkbox("Allow Flee and Scout for all battles", value=True, on_change=lambda e: change_mods("always_flee")).classes(STYLES["dqmj2-button"]):
                     ui.tooltip("Make Flee and Scout options always available,even in boss fights").classes("bg-cyan")
-                with ui.checkbox("Remove 0 XP monsters (such as arena monsters)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")):
+                with ui.checkbox("Remove 0 XP monsters (such as arena monsters)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")).classes(STYLES["dqmj2-button"]):
                      ui.tooltip("Remove special monster such as arena monsters giving 0 XP and sometime 0 Gold").classes("bg-cyan")
                 with ui.expansion('Filter Ranks', icon='font_download',caption="Include or exclude monster ranks you want").classes('w-full section-banner text-white rounded'):
                     with ui.row().classes('w-full'):
-                        ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???"))
-                        ui.checkbox("X", value=True, on_change=lambda e: change_filter("rank","X"))
-                        ui.checkbox("S", value=True, on_change=lambda e: change_filter("rank","S"))
-                        ui.checkbox("A", value=True, on_change=lambda e: change_filter("rank","A"))
-                        ui.checkbox("B", value=True, on_change=lambda e: change_filter("rank","B"))
-                        ui.checkbox("C", value=True, on_change=lambda e: change_filter("rank","C"))
-                        ui.checkbox("D", value=True, on_change=lambda e: change_filter("rank","D"))
-                        ui.checkbox("E", value=True, on_change=lambda e: change_filter("rank","E"))
-                        ui.checkbox("F", value=True, on_change=lambda e: change_filter("rank","F"))
+                        ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("X", value=True, on_change=lambda e: change_filter("rank","X")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("S", value=True, on_change=lambda e: change_filter("rank","S")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("A", value=True, on_change=lambda e: change_filter("rank","A")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("B", value=True, on_change=lambda e: change_filter("rank","B")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("C", value=True, on_change=lambda e: change_filter("rank","C")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("D", value=True, on_change=lambda e: change_filter("rank","D")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("E", value=True, on_change=lambda e: change_filter("rank","E")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("F", value=True, on_change=lambda e: change_filter("rank","F")).classes(STYLES["dqmj2-button"])
 
                 with ui.expansion('Filter Families', icon='pets',caption="Include or exclude monster families you want").classes('w-full section-banner text-white rounded'):
                     with ui.row().classes('w-full'):
-                        ui.checkbox("Beast", value=True, on_change=lambda e: change_filter("family","Beast"))
-                        ui.checkbox("Nature", value=True, on_change=lambda e: change_filter("family","Nature"))
-                        ui.checkbox("Dragon", value=True, on_change=lambda e: change_filter("family","Dragon"))
-                        ui.checkbox("Demon", value=True, on_change=lambda e: change_filter("family","Demon"))
-                        ui.checkbox("Undead", value=True, on_change=lambda e: change_filter("family","Undead"))
-                        ui.checkbox("Material", value=True, on_change=lambda e: change_filter("family","Material"))
-                        ui.checkbox("Slime", value=True, on_change=lambda e: change_filter("family","Slime"))
-                        ui.checkbox("Boss", value=True, on_change=lambda e: change_filter("family","Boss"))
+                        ui.checkbox("Beast", value=True, on_change=lambda e: change_filter("family","Beast")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Nature", value=True, on_change=lambda e: change_filter("family","Nature")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Dragon", value=True, on_change=lambda e: change_filter("family","Dragon")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Demon", value=True, on_change=lambda e: change_filter("family","Demon")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Undead", value=True, on_change=lambda e: change_filter("family","Undead")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Material", value=True, on_change=lambda e: change_filter("family","Material")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Slime", value=True, on_change=lambda e: change_filter("family","Slime")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Boss", value=True, on_change=lambda e: change_filter("family","Boss")).classes(STYLES["dqmj2-button"])
 
                 with ui.expansion('Filter Size', icon='height',caption="Include or exclude monster sizes you want").classes('w-full section-banner text-white rounded'):
                     with ui.row().classes('w-full'):
-                        ui.checkbox("Small", value=True, on_change=lambda e: change_filter("size","1"))
-                        ui.checkbox("Medium", value=True, on_change=lambda e: change_filter("size","2"))
-                        ui.checkbox("Giant", value=True, on_change=lambda e: change_filter("size","3"))
-            with ui.tab_panel(challenges):
-                with ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee")):
+                        ui.checkbox("Small", value=True, on_change=lambda e: change_filter("size","1")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Medium", value=True, on_change=lambda e: change_filter("size","2")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Giant", value=True, on_change=lambda e: change_filter("size","3")).classes(STYLES["dqmj2-button"])
+            with ui.tab_panel(challenges).classes("bg-black"):
+                with ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee")).classes(STYLES["dqmj2-button"]):
                     ui.tooltip("Do not flee anymore! Win or loss is the only way!   This challenge is disabled if \"Allow Flee and Scout for all battles\" is enabled!").classes("bg-cyan")
-                with ui.checkbox("Stronger monsters (50% stats raise)", value=False, on_change=lambda e: change_mods("150%_stats")):
+                with ui.checkbox("Stronger monsters (50% stats raise)", value=False, on_change=lambda e: change_mods("150%_stats")).classes(STYLES["dqmj2-button"]):
                     ui.tooltip("Monsters HP,MP,DEF,ATK,AGI and WIS are multiplied by 1.5").classes("bg-cyan")
 
 
@@ -163,7 +163,7 @@ def root():
         
     with ui.card().style("background:#5a5a5a;border-color: #bdbdbd;border-style: solid;border-width: 2px;width: 100%").classes('dqmj2-font'):
         with ui.row().classes("w-full"):
-            ui.button("Randomize!", on_click=lambda: try_randomization()).classes('flex-1 text-white custom-btn').style("background: #105aad;")
-            ui.button("Open output folder",on_click=lambda: os.startfile(output_dir)).classes("w-1/4")
-if __name__ == '__main__':
+            ui.button("Randomize!", on_click=lambda: try_randomization()).classes('flex-1 text-white custom-btn '+ STYLES["dqmj2-button"])
+            ui.button("Open output folder",on_click=lambda: os.startfile(output_dir)).classes("w-1/4 custom-btn "+STYLES["dqmj2-button"])
+if __name__ in {"__main__", "__mp_main__"}:
     ui.run(reload=False,title="DQMJ2 Randomizer")
