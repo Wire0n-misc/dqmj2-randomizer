@@ -2,16 +2,18 @@
 
 ---
 
-## Presentation
+## ℹ️Presentation
 
 DQMJ2 Randomizer is a tool made in Python  that allows you to randomize monsters encounter in Dragon Quest Monster Joker 2.This only works for EU (European) versions of the game.
 
-## Requirements
+⚠️**This tool is regulary updated, so check for updates and fixes !**
+
+## 📝Requirements
 
 This tool needs Python 3.11.4 at least in order to run!
 Also for now it only works with EU versions of DQMJ2.
 
-## Installing and running the randomizer
+## 📥Installing and running the randomizer
 
 1. You can either do this:
    
@@ -29,7 +31,7 @@ Also for now it only works with EU versions of DQMJ2.
 
 4. When you're done with the tool just close the tab and the command line interface.
 
-## Features
+## ✨Features
 
 - Seed : choose the seed used for randomization. If none,then a random one will be choosed.
 
@@ -47,7 +49,7 @@ Also for now it only works with EU versions of DQMJ2.
 
 - Other features coming soon!
 
-## Important notes
+## 🚨Important notes
 
 In most cases, even if big monsters overlap other slots, it isn't an issue since the game can handle it, despite being a visual mess. But there is a few cases where a specific configuration might be problematic because when you're attacking enemies the game will crash.I noticed that when it happens there is always a giant monster involved. Hopefully I found a turnaround : battling with only one monster will give game enough memory space to not crash.
 
