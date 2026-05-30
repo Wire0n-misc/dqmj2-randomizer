@@ -1,9 +1,8 @@
 from shuffle import randomize_and_patch
 from nicegui import ui,app,run
 from pathlib import Path
-
+from randomInfo import RandomizationInfo
 import os
-import signal
 import asyncio
 
 
@@ -12,33 +11,33 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 output_dir= Path(__file__).parent / 'output'
 
-filters={"special":["no_arena_monsters"]}
-seed={"seed":0}
-mods={"mods":["always_flee"]}
+
+randInfo=RandomizationInfo()
+
 def change_filter(key,value):
-    if key in filters:
-        if value in filters[key]:
-            filters[key].remove(value)
-            if len(filters[key])==0:
-                filters.pop(key,None)
+    if key in randInfo.filters:
+        if value in randInfo.filters[key]:
+            randInfo.filters[key].remove(value)
+            if len(randInfo.filters[key])==0:
+                randInfo.filters.pop(key,None)
         else:
-            filters[key].append(value)
+            randInfo.filters[key].append(value)
     else:
-        filters[key]=[value]
-    print("Current filters: "+ str(filters))
+        randInfo.filters[key]=[value]
+    print("Current filters: "+ str(randInfo.filters))
 
 def set_seed(value):
     try:
-        seed["seed"]=int(value[:-2])
+        randInfo.seed=int(value[:-2])
     except ValueError:
-        seed["seed"]=0
+        randInfo.seed=0
 
 def change_mods(value):
-    if value in mods["mods"]:
-        mods["mods"].remove(value)
+    if value in randInfo.mods:
+        randInfo.mods.remove(value)
     else:
-        mods["mods"].append(value)
-    print("Current mods: "+ str(mods))
+        randInfo.mods.append(value)
+    print("Current mods: "+ str(randInfo.mods))
 
 async def uploaded(e):
     extension=e.file.name.split(".")[1]
@@ -53,30 +52,22 @@ async def uploaded(e):
 
 async def try_randomization():
     if Path("temp_uploads/dqmj2.nds").exists():
-        with ui.dialog() as dialog,ui.card():
-            ui.label("ROM is being randomized,please wait...")
+        with ui.dialog() as dialog, ui.card().classes("dqmj2-font"):
+            ui.label("ROM is being randomized, please wait...")
             ui.spinner(size='lg')
+            percent_label = ui.label("0% Complete!")
         dialog.open()
 
-        await ui.run_javascript('await new Promise(r => setTimeout(r, 100))')
         try:
-            await run.cpu_bound(randomize_and_patch, 
-                                seed=seed["seed"] if seed["seed"] != 0 else None, 
-                                filters=filters,mods=mods["mods"])
+            await run.io_bound(randomize_and_patch, percent_label, randInfo)
+            
             dialog.close()
             show_dialog("ROM randomized successfully in output folder!")
         except Exception as error:
             dialog.close()
-            print(str(error))
-            if str(error)=="no monsters":
-                show_dialog("This configuration leads to no monsters available. Please change your choices!")
-            else:
-                show_dialog("Cannot randomize ROM! Make sure you imported DMQJ2 ROM in its EU version!")
-    else:
-        show_dialog("Please make sure nds file is imported! You can reimport it too.")
 
 def show_dialog(message):
-    with ui.dialog() as dialog,ui.card():
+    with ui.dialog() as dialog,ui.card().classes("dqmj2-font"):
         ui.label(message)
         ui.button("OK",on_click=dialog.close)
     dialog.open()

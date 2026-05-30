@@ -1,0 +1,7 @@
+class RandomizationInfo:
+    def __init__(self):
+        self.current_progress=0
+        self.max_progress=1
+        self.filters={"special":["no_arena_monsters"]}
+        self.seed=0
+        self.mods=["always_flee"]
