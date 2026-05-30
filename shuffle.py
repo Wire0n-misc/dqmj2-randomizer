@@ -146,13 +146,12 @@ def mod_pool(pool,randInfo=RandomizationInfo(),progress_label=None):
             
             for i, monster in enumerate(new_pool):
                 choosed = random.uniform(0.0, 100.0)
-                
                 for key in probability_stack:
                     interval = probability_stack[key] 
                     
                     if choosed > interval[2] and choosed <= interval[3]:
-                        XP = int(random.uniform(interval[0], interval[1]))
-                        new_pool[i] = monster[:39] + XP.to_bytes(3, "little") + monster[42:]
+                        XP = random.randint(int(interval[0]), int(interval[1]))
+                        new_pool[i] = monster[:40] + XP.to_bytes(3, "little") + monster[43:]
                         break 
                         
             updateProgress(progress_label, randInfo)
@@ -188,7 +187,7 @@ def filter_monsters(id_indices,randInfo=RandomizationInfo(),progress_label=None,
             if key=="special":#exlude special monsters such as arena monsters
                 filtered_indices=[]
                 for indice in valid_indices:
-                    xp=int.from_bytes(entries[id_indices[indice]][39:42],byteorder="little")
+                    xp=int.from_bytes(entries[id_indices[indice]][40:43],byteorder="little")
                     if xp>0 :
                         filtered_indices.append(indice)
                 
