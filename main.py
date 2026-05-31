@@ -6,7 +6,7 @@ import os
 import asyncio
 
 STYLES={
-    "dqmj2-button":"bg-blue-900 text-white rounded-lg border-2 border-black hover:bg-orange-400",
+    "dqmj2-button":"bg-blue-900 text-white rounded-lg border-2 border-black hover:bg-orange-400 !important",
 }
 
 UPLOAD_DIR = Path(__file__).parent / 'temp_uploads'
@@ -51,7 +51,7 @@ async def uploaded(e):
             f.write(await e.file.read())
             f.flush()
     else:
-        show_dialog("Please import .nds file!\nAlso click on the check mark to remove the file and retry!")
+        show_dialog(["Please import .nds file!\nAlso click on the check mark to remove the file and retry!"])
 
 async def try_randomization():
     if Path("temp_uploads/dqmj2.nds").exists():
@@ -65,21 +65,22 @@ async def try_randomization():
             await run.io_bound(randomize_and_patch, percent_label, randInfo)
             
             dialog.close()
-            show_dialog("ROM randomized successfully in output folder!")
+            show_dialog(["ROM randomized successfully in output folder!"])
         except Exception as error:
             dialog.close()
             print(str(error))
             if str(error)=="no monsters":
-                show_dialog("This configuration leads to no monsters available. Please review your choices!")
+                show_dialog(["This configuration leads to no monsters available. Please review your choices!"])
             else:
-                show_dialog("Cannot randomize ROM! Make sure you imported DMQJ2 ROM in its EU version!")
+                show_dialog(["Cannot randomize ROM! Make sure you imported DMQJ2 ROM in its EU version!"])
 
     else:
-        show_dialog("Please import EU DQMJ2 .nds file!")
+        show_dialog(["Please import EU DQMJ2 .nds file!"])
 
-def show_dialog(message):
+def show_dialog(messages):
     with ui.dialog() as dialog,ui.card().classes("dqmj2-font"):
-        ui.label(message)
+        for message in messages:
+            ui.label(message)
         ui.button("OK",on_click=dialog.close)
     dialog.open()
 
@@ -125,6 +126,7 @@ def root():
                 ui.label("ROM already imported!").classes("text-green")
         with ui.tabs().classes('w-full') as tabs:
             monsters = ui.tab('Monsters').classes(STYLES["dqmj2-button"])
+            level_up=ui.tab('Level Up (Coming Soon)').classes(STYLES["dqmj2-button"]).disable()
             challenges = ui.tab('Challenges').classes(STYLES["dqmj2-button"])
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
             with ui.tab_panel(monsters).classes("bg-black"):
@@ -132,8 +134,17 @@ def root():
                     ui.tooltip("Make Flee and Scout options always available,even in boss fights").classes("bg-cyan")
                 with ui.checkbox("Remove 0 XP monsters (such as arena monsters)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")).classes(STYLES["dqmj2-button"]):
                      ui.tooltip("Remove special monster such as arena monsters giving 0 XP and sometime 0 Gold").classes("bg-cyan")
-                with ui.checkbox("Randomize XP", value=False, on_change=lambda e: change_mods("random_xp")).classes(STYLES["dqmj2-button"]):
-                     ui.tooltip("Each monster gives a random amount of XP").classes("bg-cyan")
+                with ui.row():
+                    with ui.checkbox("Randomize XP", value=False, on_change=lambda e: change_mods("random_xp")).classes(STYLES["dqmj2-button"]):
+                        ui.tooltip("Each monster gives a random amount of XP").classes("bg-cyan")
+                    ui.button(icon="help",on_click=lambda e:show_dialog(["How does XP Randomization works?",
+                                                                         "",
+                                                                         "Each monster has a chance of giving XP based on thresholds:",
+                                                                         "0 to 100 XP => 54%",
+                                                                         "100 to 1 000 XP => 30%",
+                                                                         "1 000 to 10 000 XP => 10%",
+                                                                         "10 000 to 100 000 XP => 5%",
+                                                                         "100 000 to 333 333 XP => 1%"])).classes(STYLES["dqmj2-button"]+" rounded-xl")
                 with ui.expansion('Filter Ranks', icon='font_download',caption="Include or exclude monster ranks you want").classes('w-full section-banner text-white rounded'):
                     with ui.row().classes('w-full'):
                         ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???")).classes(STYLES["dqmj2-button"])
@@ -162,6 +173,8 @@ def root():
                         ui.checkbox("Small", value=True, on_change=lambda e: change_filter("size","1")).classes(STYLES["dqmj2-button"])
                         ui.checkbox("Medium", value=True, on_change=lambda e: change_filter("size","2")).classes(STYLES["dqmj2-button"])
                         ui.checkbox("Giant", value=True, on_change=lambda e: change_filter("size","3")).classes(STYLES["dqmj2-button"])
+            with ui.tab_panel(level_up).classes("bg-black"):
+                ui.checkbox("Boss", value=True, on_change=lambda e: change_filter("family","Boss")).classes(STYLES["dqmj2-button"])
             with ui.tab_panel(challenges).classes("bg-black"):
                 with ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee")).classes(STYLES["dqmj2-button"]):
                     ui.tooltip("Do not flee anymore! Win or loss is the only way!   This challenge is disabled if \"Allow Flee and Scout for all battles\" is enabled!").classes("bg-cyan")

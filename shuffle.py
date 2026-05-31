@@ -101,6 +101,8 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
     # Replacing the original .bin content with the new randomized content
     rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
 
+
+
     # Saving the modified ROM
     with open(rom_output, "wb") as f:
         f.write(rom_data)
@@ -137,10 +139,10 @@ def mod_pool(pool,randInfo=RandomizationInfo(),progress_label=None):
             updateProgress(progress_label,randInfo)
         if mod == "random_xp":
             probability_stack = {
-                1: [0.0, 100.0, 0.0, 72.0],
-                2: [100.0, 1000.0, 72.0, 92.0],
-                3: [1000.0, 10000.0, 92.0, 97.0],
-                4: [10000.0, 100000.0, 97.0, 99.0],
+                1: [0.0, 100.0, 0.0, 54.0],
+                2: [100.0, 1000.0, 54.0, 84.0],
+                3: [1000.0, 10000.0, 84.0, 94.0],
+                4: [10000.0, 100000.0, 94.0, 99.0],
                 5: [100000.0, 333333.0, 99.0, 100.0]
             }
             
@@ -214,6 +216,14 @@ def updateProgress(progress_label,randInfo):
     progress_label.set_text(f"{progress:.0f}% Complete!")
     progress_label.update()
 
+def randomize_level_up(rom_data,randInfo=RandomizationInfo()):
+    level_up_bin="LevelUpTbl.bin"
+    with open(level_up_bin, "rb") as f:
+        data_bin = f.read()
+    header=data_bin[:400]
+    #TODO
+    search_pattern = data_bin[:64]
+    offset = rom_data.find(search_pattern)
 #debug function
 def identify_monster_by_indice(indice):
     with open("valid_monsters.txt", 'r') as f:
