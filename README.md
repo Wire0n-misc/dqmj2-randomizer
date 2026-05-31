@@ -23,7 +23,9 @@ Also for now it only works with EU versions of DQMJ2.
    git clone https://github.com/Wire0n-misc/dqmj2-randomizer.git
    ```
    
-   Or just download all files by clicking on "<>Code" button and then "Download ZIP"
+   Or go to releases page and download the lastest release:
+   
+   [Release DQMJ2 Randomizer V1.0 · Wire0n-misc/dqmj2-randomizer · GitHub](https://github.com/Wire0n-misc/dqmj2-randomizer/releases/tag/DQMJ2_Randomizer))
 
 2. Open DQMJ2_Randomizer_Windows.bat on Windows. Linux version will come soon.
 
