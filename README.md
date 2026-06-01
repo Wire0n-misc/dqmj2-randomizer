@@ -72,7 +72,3 @@ There is a way to rerandomize the game from this point without losing your progr
 6. You can now redo your problematic battle: the monsters will change and it might be possible now without crashing.
 
 If you want to go back to your old rom,then do the same as above and just invert the two roms.
-
-###### Metrics
-
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FWire0n-misc%2Fdqmj2-randomizer&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Page+Views&edge_flat=false)](https://hits.seeyoufarm.com)
