@@ -1,4 +1,4 @@
-from shuffle import randomize_and_patch
+from shuffle import randomize_and_patch,get_xp_curve_data
 from nicegui import ui,app,run
 from pathlib import Path
 from randomInfo import RandomizationInfo
@@ -7,13 +7,14 @@ import asyncio
 
 STYLES={
     "dqmj2-button":"bg-blue-900 text-white rounded-lg border-2 border-black hover:bg-orange-400 !important",
+    "dqmj2-element":"bg-blue-900 text-white rounded-lg border-2 border-black !important",
 }
 
 UPLOAD_DIR = Path(__file__).parent / 'temp_uploads'
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 output_dir= Path(__file__).parent / 'output'
-
+xp_variance=[110]
 
 randInfo=RandomizationInfo()
 
@@ -41,6 +42,16 @@ def change_mods(value):
     else:
         randInfo.mods.append(value)
     print("Current mods: "+ str(randInfo.mods))
+
+def change_level_up_mode(radio_value):
+    match radio_value.value:
+        case 1:
+            randInfo.level_up_mode={}
+        case 2:
+            randInfo.level_up_mode={"swap":""}
+        case 3:
+            randInfo.level_up_mode={"random":xp_variance[0]}
+    print("Current Level Up Mode="+str(randInfo.level_up_mode))
 
 async def uploaded(e):
     extension=e.file.name.split(".")[1]
@@ -84,6 +95,55 @@ def show_dialog(messages):
         ui.button("OK",on_click=dialog.close)
     dialog.open()
 
+def get_chart_opts(variance_factor):
+    curves=get_xp_curve_data(variance_factor)
+    return {
+        "title": {"text": "XP Required by level (example)", "textStyle": {"color": "#ccc"}},
+        "tooltip": {"trigger": "axis"},
+        "legend": {"data": ["Maximum", "Normal","Minimum"], "textStyle": {"color": "#ccc"}},
+        "xAxis": {
+            "type": "category",
+            "data": curves["levels"],
+            "axisLabel": {"color": "#ccc"},
+        },
+        "yAxis": {"type": "value", "axisLabel": {"color": "#ccc"}},
+        "series": [
+            {
+                "name": "Normal",
+                "type": "line",
+                "data": curves["normal"],
+                "itemStyle":{"color": "#dae908"},
+                "lineStyle": {"width": 3,"color": "#dae908"},
+                "symbol": "none",
+                #"z": 10,
+            },
+            {
+                "name": "Minimum",
+                "type": "line",
+                "data": curves["min"],
+                "itemStyle":{"color": "#1e08e9"},
+                "lineStyle": {"width": 3,"color": "#1e08e9"},
+                "symbol": "none",
+            },
+            {
+                "name": "Maximum",
+                "type": "line",
+                "data": curves["max"],
+                "itemStyle":{"color": "#e90808"},
+                "lineStyle": {"width": 3,"color": "#e90808"},
+                "symbol": "none",
+            },
+        ],
+    }
+def update_xp_chart(chart,value):
+    chart._props['options'] = get_chart_opts(value/100)
+    chart.update()
+    xp_variance[0]=value
+    if "random" in randInfo.level_up_mode.keys():
+        randInfo.level_up_mode["random"]=xp_variance[0]
+        print("Current Level Up Mode="+str(randInfo.level_up_mode))
+
+
 @ui.page('/')
 def root():
     app.add_static_files('/static', 'fonts')
@@ -126,7 +186,7 @@ def root():
                 ui.label("ROM already imported!").classes("text-green")
         with ui.tabs().classes('w-full') as tabs:
             monsters = ui.tab('Monsters').classes(STYLES["dqmj2-button"])
-            level_up=ui.tab('Level Up (Coming Soon)').classes(STYLES["dqmj2-button"]).disable()
+            level_up=ui.tab('Level Up').classes(STYLES["dqmj2-button"])
             challenges = ui.tab('Challenges').classes(STYLES["dqmj2-button"])
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
             with ui.tab_panel(monsters).classes("bg-black"):
@@ -174,7 +234,14 @@ def root():
                         ui.checkbox("Medium", value=True, on_change=lambda e: change_filter("size","2")).classes(STYLES["dqmj2-button"])
                         ui.checkbox("Giant", value=True, on_change=lambda e: change_filter("size","3")).classes(STYLES["dqmj2-button"])
             with ui.tab_panel(level_up).classes("bg-black"):
-                ui.checkbox("Boss", value=True, on_change=lambda e: change_filter("family","Boss")).classes(STYLES["dqmj2-button"])
+                ui.radio({1: 'Do not randomize Level Up XP', 2: 'Swap Level Up XP curves', 3: 'Randomize Level Up XP (see below)'},value=1,on_change=lambda e:change_level_up_mode(e)).classes("bg-blue-900 text-white rounded-lg border-2 border-black")
+                chart=ui.echart(options=get_chart_opts(1.1)).classes(STYLES["dqmj2-element"])
+                slider = ui.slider(min=110, max=200, value=110,on_change=lambda e: update_xp_chart(chart,e.value)).classes(STYLES["dqmj2-element"])
+                ui.label().bind_text_from(
+                target_object=slider, 
+                target_name='value', 
+                backward=lambda v: f"Variation: {v} %"
+                ).classes("text-white")
             with ui.tab_panel(challenges).classes("bg-black"):
                 with ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee")).classes(STYLES["dqmj2-button"]):
                     ui.tooltip("Do not flee anymore! Win or loss is the only way!   This challenge is disabled if \"Allow Flee and Scout for all battles\" is enabled!").classes("bg-cyan")

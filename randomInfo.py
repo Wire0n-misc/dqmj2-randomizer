@@ -5,3 +5,4 @@ class RandomizationInfo:
         self.filters={"special":["no_arena_monsters"]}
         self.seed=0
         self.mods=["always_flee"]
+        self.level_up_mode={}

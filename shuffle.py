@@ -101,7 +101,8 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
     # Replacing the original .bin content with the new randomized content
     rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
 
-
+    if len(randInfo.level_up_mode)>0:
+        randomize_level_up(progress_label,rom_data,randInfo)
 
     # Saving the modified ROM
     with open(rom_output, "wb") as f:
@@ -204,7 +205,9 @@ def determine_task_number(randInfo=RandomizationInfo()):
         res+=1
     for filter in randInfo.filters:
         res+=1
-    #manually defined tasks
+    for lvl_up_mode in randInfo.level_up_mode:
+        res+=1
+    #manually defined tasks for monster randomization
     for i in range(0,9,1):
         res+=1
     return res
@@ -216,14 +219,49 @@ def updateProgress(progress_label,randInfo):
     progress_label.set_text(f"{progress:.0f}% Complete!")
     progress_label.update()
 
-def randomize_level_up(rom_data,randInfo=RandomizationInfo()):
+def randomize_level_up(progress_label,rom_data,randInfo=RandomizationInfo()):
+    mode=randInfo.level_up_mode
     level_up_bin="LevelUpTbl.bin"
     with open(level_up_bin, "rb") as f:
         data_bin = f.read()
     header=data_bin[:400]
-    #TODO
-    search_pattern = data_bin[:64]
-    offset = rom_data.find(search_pattern)
+    body=data_bin[400:]
+    search_pattern = data_bin[400:500]
+    offset = rom_data.find(search_pattern)-400
+    if "swap" in mode.keys():
+        curves=[body[i*400:(i+1)*400] for i in range(17)]
+        random.shuffle(curves)
+        randomized_bin_content = header + b"".join(curves)
+        rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
+        updateProgress(progress_label,randInfo)
+    else:
+        if "random" in mode.keys():
+            variance_factor=float(mode["random"])/100
+            curves=[body[i*400:(i+1)*400] for i in range(17)]
+            for i,curve in enumerate(curves):
+                amounts=[int.from_bytes(curve[j*4:(j+1)*4],"little") for j in range(100)]
+                diffs=[0]+[amounts[j+1]-amounts[j] for j,e in enumerate(amounts) if j!=99]
+                final_amounts=[amounts[j]+diffs[j]*random.uniform(2-variance_factor,variance_factor) for j in range(100)]
+                final_bytes=[int.to_bytes(int(amount),4,"little") for amount in  final_amounts]
+                curves[i]=b"".join(final_bytes)
+            randomized_bin_content = header + b"".join(curves)
+            rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
+            updateProgress(progress_label,randInfo)
+
+
+def get_xp_curve_data(variance_factor):
+    level_up_bin="LevelUpTbl.bin"
+    with open(level_up_bin, "rb") as f:
+        data_bin = f.read()
+    curve_bin=data_bin[400:800]
+    amounts=[int.from_bytes(curve_bin[i*4:(i+1)*4],"little") for i in range(100)]
+    diffs=[0]+[amounts[i+1]-amounts[i] for i,e in enumerate(amounts) if i!=99]
+    #percentage=variance_factor-1
+    #min_amounts=[int(amounts[i]-diffs[i]*percentage) for i,e in enumerate(amounts)]
+    #max_amounts=[int(amounts[i]+diffs[i]*percentage) for i,e in enumerate(amounts)]
+    levels=[i for i in range(100)]
+    return {"normal":diffs,"min":[diff*(2-variance_factor) for diff in diffs],"max":[diff*variance_factor for diff in diffs],"levels":levels}
+    
 #debug function
 def identify_monster_by_indice(indice):
     with open("valid_monsters.txt", 'r') as f:

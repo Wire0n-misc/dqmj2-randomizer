@@ -37,11 +37,17 @@ Also for now it only works with EU versions of DQMJ2.
 
 - Seed : choose the seed used for randomization. If none,then a random one will be choosed.
 
+- Monster randomization: randomize monsters encounters.
+
 - Rank filtering : choose which monsters can appear based on selected ranks.
 
 - Family filtering: choose which monsters can appear based on selected families.
 
 - Size filtering: choose which monsters can appear based on selected sizes.
+
+- XP randomization: randomize XP given by each monster.
+
+- Level Up XP randomization or swap (XP curves): randomize XP required for gaining levels.
 
 - Challenges:
   
