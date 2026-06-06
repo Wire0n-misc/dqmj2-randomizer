@@ -18,6 +18,14 @@ xp_variance=[110]
 
 randInfo=RandomizationInfo()
 
+
+#Data change functions
+def set_seed(value):
+    try:
+        randInfo.seed=int(value[:-2])
+    except ValueError:
+        randInfo.seed=0
+
 def change_filter(key,value):
     if key in randInfo.filters:
         if value in randInfo.filters[key]:
@@ -29,12 +37,6 @@ def change_filter(key,value):
     else:
         randInfo.filters[key]=[value]
     print("Current filters: "+ str(randInfo.filters))
-
-def set_seed(value):
-    try:
-        randInfo.seed=int(value[:-2])
-    except ValueError:
-        randInfo.seed=0
 
 def change_mods(value):
     if value in randInfo.mods:
@@ -52,6 +54,14 @@ def change_level_up_mode(radio_value):
         case 3:
             randInfo.level_up_mode={"random":xp_variance[0]}
     print("Current Level Up Mode="+str(randInfo.level_up_mode))
+
+def update_xp_chart(chart,value):
+    chart._props['options'] = get_chart_opts(value/100)
+    chart.update()
+    xp_variance[0]=value
+    if "random" in randInfo.level_up_mode.keys():
+        randInfo.level_up_mode["random"]=xp_variance[0]
+        print("Current Level Up Mode="+str(randInfo.level_up_mode))
 
 async def uploaded(e):
     extension=e.file.name.split(".")[1]
@@ -135,14 +145,76 @@ def get_chart_opts(variance_factor):
             },
         ],
     }
-def update_xp_chart(chart,value):
-    chart._props['options'] = get_chart_opts(value/100)
-    chart.update()
-    xp_variance[0]=value
-    if "random" in randInfo.level_up_mode.keys():
-        randInfo.level_up_mode["random"]=xp_variance[0]
-        print("Current Level Up Mode="+str(randInfo.level_up_mode))
 
+#Components
+
+def monsters_tab(monsters):
+    with ui.tab_panel(monsters).classes("bg-black"):
+                with ui.checkbox("Allow Flee and Scout for all battles", value=True, on_change=lambda e: change_mods("always_flee")).classes(STYLES["dqmj2-button"]):
+                    ui.tooltip("Make Flee and Scout options always available,even in boss fights").classes("bg-cyan")
+                with ui.checkbox("Remove 0 XP monsters (such as arena monsters)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")).classes(STYLES["dqmj2-button"]):
+                     ui.tooltip("Remove special monster such as arena monsters giving 0 XP and sometime 0 Gold").classes("bg-cyan")
+                with ui.row():
+                    with ui.checkbox("Randomize XP", value=False, on_change=lambda e: change_mods("random_xp")).classes(STYLES["dqmj2-button"]):
+                        ui.tooltip("Each monster gives a random amount of XP").classes("bg-cyan")
+                    ui.button(icon="help",on_click=lambda e:show_dialog(["How does XP Randomization works?",
+                                                                         "",
+                                                                         "Each monster has a chance of giving XP based on thresholds:",
+                                                                         "0 to 100 XP => 54%",
+                                                                         "100 to 1 000 XP => 30%",
+                                                                         "1 000 to 10 000 XP => 10%",
+                                                                         "10 000 to 100 000 XP => 5%",
+                                                                         "100 000 to 333 333 XP => 1%"])).classes(STYLES["dqmj2-button"]+" rounded-xl")
+                with ui.expansion('Filter Ranks', icon='font_download',caption="Include or exclude monster ranks you want").classes('w-full section-banner text-white rounded'):
+                    with ui.row().classes('w-full'):
+                        ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("X", value=True, on_change=lambda e: change_filter("rank","X")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("S", value=True, on_change=lambda e: change_filter("rank","S")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("A", value=True, on_change=lambda e: change_filter("rank","A")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("B", value=True, on_change=lambda e: change_filter("rank","B")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("C", value=True, on_change=lambda e: change_filter("rank","C")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("D", value=True, on_change=lambda e: change_filter("rank","D")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("E", value=True, on_change=lambda e: change_filter("rank","E")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("F", value=True, on_change=lambda e: change_filter("rank","F")).classes(STYLES["dqmj2-button"])
+
+                with ui.expansion('Filter Families', icon='pets',caption="Include or exclude monster families you want").classes('w-full section-banner text-white rounded'):
+                    with ui.row().classes('w-full'):
+                        ui.checkbox("Beast", value=True, on_change=lambda e: change_filter("family","Beast")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Nature", value=True, on_change=lambda e: change_filter("family","Nature")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Dragon", value=True, on_change=lambda e: change_filter("family","Dragon")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Demon", value=True, on_change=lambda e: change_filter("family","Demon")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Undead", value=True, on_change=lambda e: change_filter("family","Undead")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Material", value=True, on_change=lambda e: change_filter("family","Material")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Slime", value=True, on_change=lambda e: change_filter("family","Slime")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Boss", value=True, on_change=lambda e: change_filter("family","Boss")).classes(STYLES["dqmj2-button"])
+
+                with ui.expansion('Filter Size', icon='height',caption="Include or exclude monster sizes you want").classes('w-full section-banner text-white rounded'):
+                    with ui.row().classes('w-full'):
+                        ui.checkbox("Small", value=True, on_change=lambda e: change_filter("size","1")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Medium", value=True, on_change=lambda e: change_filter("size","2")).classes(STYLES["dqmj2-button"])
+                        ui.checkbox("Giant", value=True, on_change=lambda e: change_filter("size","3")).classes(STYLES["dqmj2-button"])
+
+def levelup_tab(level_up):
+    with ui.tab_panel(level_up).classes("bg-black"):
+                ui.radio({1: 'Do not randomize Level Up XP', 2: 'Swap Level Up XP curves', 3: 'Randomize Level Up XP (see below)'},value=1,on_change=lambda e:change_level_up_mode(e)).classes("bg-blue-900 text-white rounded-lg border-2 border-black")
+                chart=ui.echart(options=get_chart_opts(1.1)).classes(STYLES["dqmj2-element"])
+                slider = ui.slider(min=110, max=200, value=110,on_change=lambda e: update_xp_chart(chart,e.value)).classes(STYLES["dqmj2-element"])
+                ui.label().bind_text_from(
+                target_object=slider, 
+                target_name='value', 
+                backward=lambda v: f"Variation: {v} %"
+                ).classes("text-white")
+
+def skill_points_tab(skill_points):
+    with ui.tab_panel(skill_points).classes("bg-black"):
+        ui.label("no yet!")
+
+def challenge_tab(challenges):
+    with ui.tab_panel(challenges).classes("bg-black"):
+        with ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee")).classes(STYLES["dqmj2-button"]):
+            ui.tooltip("Do not flee anymore! Win or loss is the only way!   This challenge is disabled if \"Allow Flee and Scout for all battles\" is enabled!").classes("bg-cyan")
+        with ui.checkbox("Stronger monsters (50% stats raise)", value=False, on_change=lambda e: change_mods("150%_stats")).classes(STYLES["dqmj2-button"]):
+            ui.tooltip("Monsters HP,MP,DEF,ATK,AGI and WIS are multiplied by 1.5").classes("bg-cyan")
 
 @ui.page('/')
 def root():
@@ -187,70 +259,15 @@ def root():
         with ui.tabs().classes('w-full') as tabs:
             monsters = ui.tab('Monsters').classes(STYLES["dqmj2-button"])
             level_up=ui.tab('Level Up').classes(STYLES["dqmj2-button"])
+            skill_points=ui.tab("Skill Points (Coming soon!)").classes(STYLES["dqmj2-button"]).disable()
             challenges = ui.tab('Challenges').classes(STYLES["dqmj2-button"])
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
-            with ui.tab_panel(monsters).classes("bg-black"):
-                with ui.checkbox("Allow Flee and Scout for all battles", value=True, on_change=lambda e: change_mods("always_flee")).classes(STYLES["dqmj2-button"]):
-                    ui.tooltip("Make Flee and Scout options always available,even in boss fights").classes("bg-cyan")
-                with ui.checkbox("Remove 0 XP monsters (such as arena monsters)", value=True, on_change=lambda e: change_filter("special","no_arena_monsters")).classes(STYLES["dqmj2-button"]):
-                     ui.tooltip("Remove special monster such as arena monsters giving 0 XP and sometime 0 Gold").classes("bg-cyan")
-                with ui.row():
-                    with ui.checkbox("Randomize XP", value=False, on_change=lambda e: change_mods("random_xp")).classes(STYLES["dqmj2-button"]):
-                        ui.tooltip("Each monster gives a random amount of XP").classes("bg-cyan")
-                    ui.button(icon="help",on_click=lambda e:show_dialog(["How does XP Randomization works?",
-                                                                         "",
-                                                                         "Each monster has a chance of giving XP based on thresholds:",
-                                                                         "0 to 100 XP => 54%",
-                                                                         "100 to 1 000 XP => 30%",
-                                                                         "1 000 to 10 000 XP => 10%",
-                                                                         "10 000 to 100 000 XP => 5%",
-                                                                         "100 000 to 333 333 XP => 1%"])).classes(STYLES["dqmj2-button"]+" rounded-xl")
-                with ui.expansion('Filter Ranks', icon='font_download',caption="Include or exclude monster ranks you want").classes('w-full section-banner text-white rounded'):
-                    with ui.row().classes('w-full'):
-                        ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("X", value=True, on_change=lambda e: change_filter("rank","X")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("S", value=True, on_change=lambda e: change_filter("rank","S")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("A", value=True, on_change=lambda e: change_filter("rank","A")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("B", value=True, on_change=lambda e: change_filter("rank","B")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("C", value=True, on_change=lambda e: change_filter("rank","C")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("D", value=True, on_change=lambda e: change_filter("rank","D")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("E", value=True, on_change=lambda e: change_filter("rank","E")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("F", value=True, on_change=lambda e: change_filter("rank","F")).classes(STYLES["dqmj2-button"])
+            monsters_tab(monsters)
+            levelup_tab(level_up)
+            skill_points_tab(skill_points)
+            challenge_tab(challenges)
+            
 
-                with ui.expansion('Filter Families', icon='pets',caption="Include or exclude monster families you want").classes('w-full section-banner text-white rounded'):
-                    with ui.row().classes('w-full'):
-                        ui.checkbox("Beast", value=True, on_change=lambda e: change_filter("family","Beast")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Nature", value=True, on_change=lambda e: change_filter("family","Nature")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Dragon", value=True, on_change=lambda e: change_filter("family","Dragon")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Demon", value=True, on_change=lambda e: change_filter("family","Demon")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Undead", value=True, on_change=lambda e: change_filter("family","Undead")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Material", value=True, on_change=lambda e: change_filter("family","Material")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Slime", value=True, on_change=lambda e: change_filter("family","Slime")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Boss", value=True, on_change=lambda e: change_filter("family","Boss")).classes(STYLES["dqmj2-button"])
-
-                with ui.expansion('Filter Size', icon='height',caption="Include or exclude monster sizes you want").classes('w-full section-banner text-white rounded'):
-                    with ui.row().classes('w-full'):
-                        ui.checkbox("Small", value=True, on_change=lambda e: change_filter("size","1")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Medium", value=True, on_change=lambda e: change_filter("size","2")).classes(STYLES["dqmj2-button"])
-                        ui.checkbox("Giant", value=True, on_change=lambda e: change_filter("size","3")).classes(STYLES["dqmj2-button"])
-            with ui.tab_panel(level_up).classes("bg-black"):
-                ui.radio({1: 'Do not randomize Level Up XP', 2: 'Swap Level Up XP curves', 3: 'Randomize Level Up XP (see below)'},value=1,on_change=lambda e:change_level_up_mode(e)).classes("bg-blue-900 text-white rounded-lg border-2 border-black")
-                chart=ui.echart(options=get_chart_opts(1.1)).classes(STYLES["dqmj2-element"])
-                slider = ui.slider(min=110, max=200, value=110,on_change=lambda e: update_xp_chart(chart,e.value)).classes(STYLES["dqmj2-element"])
-                ui.label().bind_text_from(
-                target_object=slider, 
-                target_name='value', 
-                backward=lambda v: f"Variation: {v} %"
-                ).classes("text-white")
-            with ui.tab_panel(challenges).classes("bg-black"):
-                with ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee")).classes(STYLES["dqmj2-button"]):
-                    ui.tooltip("Do not flee anymore! Win or loss is the only way!   This challenge is disabled if \"Allow Flee and Scout for all battles\" is enabled!").classes("bg-cyan")
-                with ui.checkbox("Stronger monsters (50% stats raise)", value=False, on_change=lambda e: change_mods("150%_stats")).classes(STYLES["dqmj2-button"]):
-                    ui.tooltip("Monsters HP,MP,DEF,ATK,AGI and WIS are multiplied by 1.5").classes("bg-cyan")
-
-
-
-        
     with ui.card().style("background:#5a5a5a;border-color: #bdbdbd;border-style: solid;border-width: 2px;width: 100%").classes('dqmj2-font'):
         with ui.row().classes("w-full"):
             ui.button("Randomize!", on_click=lambda: try_randomization()).classes('flex-1 text-white custom-btn '+ STYLES["dqmj2-button"])
