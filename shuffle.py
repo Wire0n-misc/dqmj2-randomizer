@@ -2,6 +2,7 @@ import random
 import struct
 import os
 import nicegui
+from utils import utils
 from randomInfo import RandomizationInfo
 def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
     # --- CONFIGURATION ---
@@ -103,6 +104,8 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
 
     if len(randInfo.level_up_mode)>0:
         randomize_level_up(progress_label,rom_data,randInfo)
+    if len(randInfo.skill_points_mode)>0:
+        randomize_skill_points(progress_label,rom_data,randInfo)
 
     # Saving the modified ROM
     with open(rom_output, "wb") as f:
@@ -207,6 +210,8 @@ def determine_task_number(randInfo=RandomizationInfo()):
         res+=1
     for lvl_up_mode in randInfo.level_up_mode:
         res+=1
+    for skill_point_mode in randInfo.skill_points_mode:
+        res+=1
     #manually defined tasks for monster randomization
     for i in range(0,9,1):
         res+=1
@@ -228,14 +233,15 @@ def randomize_level_up(progress_label,rom_data,randInfo=RandomizationInfo()):
     body=data_bin[400:]
     search_pattern = data_bin[400:500]
     offset = rom_data.find(search_pattern)-400
-    if "swap" in mode.keys():
-        curves=[body[i*400:(i+1)*400] for i in range(17)]
-        random.shuffle(curves)
-        randomized_bin_content = header + b"".join(curves)
-        rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
-        updateProgress(progress_label,randInfo)
-    else:
-        if "random" in mode.keys():
+    key= list(mode.keys())[0]
+    match key:
+        case "swap":
+            curves=[body[i*400:(i+1)*400] for i in range(17)]
+            random.shuffle(curves)
+            randomized_bin_content = header + b"".join(curves)
+            rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
+            updateProgress(progress_label,randInfo)
+        case "random":
             variance_factor=float(mode["random"])/100
             curves=[body[i*400:(i+1)*400] for i in range(17)]
             for i,curve in enumerate(curves):
@@ -261,6 +267,29 @@ def get_xp_curve_data(variance_factor):
     #max_amounts=[int(amounts[i]+diffs[i]*percentage) for i,e in enumerate(amounts)]
     levels=[i for i in range(100)]
     return {"normal":diffs,"min":[diff*(2-variance_factor) for diff in diffs],"max":[diff*variance_factor for diff in diffs],"levels":levels}
+
+def randomize_skill_points(progress_label,rom_data,randInfo):
+    mode=randInfo.skill_points_mode
+    skill_points_bin="SkillPointTbl.bin"
+    with open(skill_points_bin, "rb") as f:
+        data_bin = f.read()    
+    key= list(mode.keys())[0]
+    levels_points_bin= [data_bin[i:i+1] for i in range(100)]
+    match key:
+        case "swap":
+            random.shuffle(levels_points_bin)
+            
+        case "random":
+            data=[[50.0,1],[25.0,5],[12.5,8],[6.25,11],[3.125,15],[3.125,20]]
+            for i,e in enumerate(levels_points_bin):
+                points=utils.probability_stack(data)
+                levels_points_bin[i]=int.to_bytes(points,1,"big")
+    randomized_bin_content = b"".join(levels_points_bin)
+    search_pattern = data_bin
+    offset = rom_data.find(search_pattern)
+    rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
+    updateProgress(progress_label,randInfo)
+
     
 #debug function
 def identify_monster_by_indice(indice):

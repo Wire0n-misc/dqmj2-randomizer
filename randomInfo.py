@@ -6,3 +6,4 @@ class RandomizationInfo:
         self.seed=0
         self.mods=["always_flee"]
         self.level_up_mode={}
+        self.skill_points_mode={}

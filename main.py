@@ -55,6 +55,16 @@ def change_level_up_mode(radio_value):
             randInfo.level_up_mode={"random":xp_variance[0]}
     print("Current Level Up Mode="+str(randInfo.level_up_mode))
 
+def change_skill_point_mode(radio_value):
+    match radio_value.value:
+        case 1:
+            randInfo.skill_points_mode={}
+        case 2:
+            randInfo.skill_points_mode={"swap":""}
+        case 3:
+            randInfo.skill_points_mode={"random":""}
+    print("Current Skill Point Mode="+str(randInfo.skill_points_mode))
+
 def update_xp_chart(chart,value):
     chart._props['options'] = get_chart_opts(value/100)
     chart.update()
@@ -207,7 +217,7 @@ def levelup_tab(level_up):
 
 def skill_points_tab(skill_points):
     with ui.tab_panel(skill_points).classes("bg-black"):
-        ui.label("no yet!")
+         ui.radio({1: 'Do not randomize Skill Points', 2: 'Swap Skill Points Levels', 3: 'Randomize Skill Points'},value=1,on_change=lambda e:change_skill_point_mode(e)).classes("bg-blue-900 text-white rounded-lg border-2 border-black")
 
 def challenge_tab(challenges):
     with ui.tab_panel(challenges).classes("bg-black"):
@@ -259,7 +269,7 @@ def root():
         with ui.tabs().classes('w-full') as tabs:
             monsters = ui.tab('Monsters').classes(STYLES["dqmj2-button"])
             level_up=ui.tab('Level Up').classes(STYLES["dqmj2-button"])
-            skill_points=ui.tab("Skill Points (Coming soon!)").classes(STYLES["dqmj2-button"]).disable()
+            skill_points=ui.tab("Skill Points").classes(STYLES["dqmj2-button"])
             challenges = ui.tab('Challenges').classes(STYLES["dqmj2-button"])
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
             monsters_tab(monsters)
