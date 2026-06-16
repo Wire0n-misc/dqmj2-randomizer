@@ -106,7 +106,8 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
         randomize_level_up(progress_label,rom_data,randInfo)
     if len(randInfo.skill_points_mode)>0:
         randomize_skill_points(progress_label,rom_data,randInfo)
-
+    if len(randInfo.item_mode)>0:
+        randomize_items(progress_label,rom_data,randInfo)
     # Saving the modified ROM
     with open(rom_output, "wb") as f:
         f.write(rom_data)
@@ -212,6 +213,8 @@ def determine_task_number(randInfo=RandomizationInfo()):
         res+=1
     for skill_point_mode in randInfo.skill_points_mode:
         res+=1
+    for item_mode in randInfo.item_mode:
+        res+=1
     #manually defined tasks for monster randomization
     for i in range(0,9,1):
         res+=1
@@ -287,6 +290,24 @@ def randomize_skill_points(progress_label,rom_data,randInfo):
     randomized_bin_content = b"".join(levels_points_bin)
     search_pattern = data_bin
     offset = rom_data.find(search_pattern)
+    rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
+    updateProgress(progress_label,randInfo)
+
+def randomize_items(progress_label,rom_data,randInfo):
+    mode=randInfo.item_mode
+    items_bin="ItemTbl.bin"
+    with open(items_bin, "rb") as f:
+        data_bin = f.read()    
+    key= list(mode.keys())[0]
+    header=data_bin[:8]
+    body=data_bin[8:]
+    items_bin= [body[i*176:(i+1)*176] for i in range(128)]
+    match key:
+        case "swap":
+            random.shuffle(items_bin)
+    randomized_bin_content = header + b"".join(items_bin)
+    search_pattern = data_bin
+    offset = 0x41EBC00 #rom_data.find(search_pattern)
     rom_data[offset : offset + len(randomized_bin_content)] = randomized_bin_content
     updateProgress(progress_label,randInfo)
 

@@ -65,6 +65,13 @@ def change_skill_point_mode(radio_value):
             randInfo.skill_points_mode={"random":""}
     print("Current Skill Point Mode="+str(randInfo.skill_points_mode))
 
+def change_item_mode(value):
+    if value == True:
+        randInfo.item_mode={"swap":""}
+    else:
+        randInfo.item_mode={}
+    print("Current Item Mode="+str(randInfo.item_mode))
+
 def update_xp_chart(chart,value):
     chart._props['options'] = get_chart_opts(value/100)
     chart.update()
@@ -226,6 +233,10 @@ def challenge_tab(challenges):
         with ui.checkbox("Stronger monsters (50% stats raise)", value=False, on_change=lambda e: change_mods("150%_stats")).classes(STYLES["dqmj2-button"]):
             ui.tooltip("Monsters HP,MP,DEF,ATK,AGI and WIS are multiplied by 1.5").classes("bg-cyan")
 
+def item_tab(items):
+    with ui.tab_panel(items).classes("bg-black"):
+        with ui.checkbox("Randomize Items", value=False, on_change=lambda e: change_item_mode(e.value)).classes(STYLES["dqmj2-button"]):
+            ui.tooltip("Randomizes what every item in the game will do.").classes("bg-cyan")
 @ui.page('/')
 def root():
     app.add_static_files('/static', 'fonts')
@@ -270,11 +281,13 @@ def root():
             monsters = ui.tab('Monsters').classes(STYLES["dqmj2-button"])
             level_up=ui.tab('Level Up').classes(STYLES["dqmj2-button"])
             skill_points=ui.tab("Skill Points").classes(STYLES["dqmj2-button"])
+            items=ui.tab("Items").classes(STYLES["dqmj2-button"])
             challenges = ui.tab('Challenges').classes(STYLES["dqmj2-button"])
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
             monsters_tab(monsters)
             levelup_tab(level_up)
             skill_points_tab(skill_points)
+            item_tab(items)
             challenge_tab(challenges)
             
 
