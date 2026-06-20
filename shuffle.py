@@ -302,9 +302,13 @@ def randomize_items(progress_label,rom_data,randInfo):
     header=data_bin[:8]
     body=data_bin[8:]
     items_bin= [body[i*176:(i+1)*176] for i in range(128)]
+    valid_indices=[i for i in range(128) if int.from_bytes(items_bin[i][0:16],"little")>0]
+    valid_items=[items_bin[i] for i in valid_indices]
     match key:
         case "swap":
-            random.shuffle(items_bin)
+            random.shuffle(valid_items)
+            for i,indice in enumerate(valid_indices):
+                items_bin[indice]=valid_items[i]
     randomized_bin_content = header + b"".join(items_bin)
     search_pattern = data_bin
     offset = 0x41EBC00 #rom_data.find(search_pattern)
