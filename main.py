@@ -277,6 +277,8 @@ def root():
             ui.number("Seed", value=0, precision=0,step=1, on_change=lambda e: set_seed(str(e.value))).style("background: white;")
         if Path("temp_uploads/dqmj2.nds").exists():
                 ui.label("ROM already imported!").classes("text-green")
+        with ui.checkbox("Generate Spoiler File", value=randInfo.generate_spoiler, on_change=lambda e: setattr(randInfo, 'generate_spoiler', e.value)).classes(STYLES["dqmj2-button"]):
+                    ui.tooltip("Generate a spoiler file with the randomized information").classes("bg-cyan")
         with ui.tabs().classes('w-full') as tabs:
             monsters = ui.tab('Monsters').classes(STYLES["dqmj2-button"])
             level_up=ui.tab('Level Up').classes(STYLES["dqmj2-button"])

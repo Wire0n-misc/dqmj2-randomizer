@@ -4,12 +4,47 @@ import os
 import nicegui
 from utils import utils
 from randomInfo import RandomizationInfo
+
+spoiler_file = {"path": "spoiler.txt"}
+valid_monsters_file = "valid_monsters.txt"
+valid_monsters_info = []
+with open(valid_monsters_file, 'r') as f:
+    lines=f.readlines()
+    for line in lines:
+        parts=line.strip().split(",")
+        valid_indice=int(parts[0])
+        monster_id=int(parts[1])
+        monster_name=parts[2]
+        HP=int(parts[3])
+        MP=int(parts[4])
+        ATK=int(parts[5])
+        DEF=int(parts[6])
+        AGI=int(parts[7])
+        WIS=int(parts[8])
+        monster_rank=parts[9]
+        monster_family=parts[10]
+        monster_size=parts[11]
+        valid_monsters_info.append({
+            "indice": valid_indice,
+            "id": monster_id,
+            "name": monster_name,
+            "HP": HP,
+            "MP": MP,
+            "ATK": ATK,
+            "DEF": DEF,
+            "AGI": AGI,
+            "WIS": WIS,
+            "rank": monster_rank,
+            "family": monster_family,
+            "size": monster_size
+        })
+
 def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
     # --- CONFIGURATION ---
     input_bin = "BtlEnmyPrm2.bin"      # Original .bin file extracted from the ROM
     rom_original = "temp_uploads/dqmj2.nds"      # Original ROM (must match the one used to extract the .bin,will be removerd in the future for security reasons)
     rom_output = "dqmj2_RANDOM.nds"   # Output ROM with randomized monsters
-    
+           # Output spoiler file (if enabled)    
     entry_size = 100
     header_size = 8
 
@@ -21,11 +56,21 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
     if randInfo.seed!=0:
         random.seed(randInfo.seed)
         rom_output = f"output/dqmj2_{randInfo.seed}.nds"
+        spoiler_file["path"] = f"output/spoiler_{randInfo.seed}.txt"
     else:
         user_seed = random.randint(0, 999999)
         random.seed(user_seed)
+        randInfo.seed=user_seed
         rom_output = f"output/dqmj2_{user_seed}.nds"
+        spoiler_file["path"] = f"output/spoiler_{user_seed}.txt"
 
+    if(randInfo.generate_spoiler):
+        with open(spoiler_file["path"], "w") as f:
+            f.write(f"Randomization Seed: {randInfo.seed}\n")
+            f.write(f"Filters applied: {randInfo.filters}\n")
+            f.write(f"Monsters modifications applied: {randInfo.mods}\n")
+            f.write("------\n")
+            f.write("\n")
     updateProgress(progress_label,randInfo)#task 1
 
     # Read the original .bin file and parse its entries
@@ -64,12 +109,25 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
     print("final possible monsters: "+str(len(base_pool)))
     pool=list(base_pool)
 
+    original_monster_names=[]
+    if(randInfo.generate_spoiler):
+        for i in pool:
+           original_monster_names.append(get_monster_info_by_data(monster_id=int(struct.unpack("<H", i[0:2])[0]))["name"])
     updateProgress(progress_label,randInfo)#task 6
 
     while len(pool)<1400:
         pool.append(random.choice(base_pool))
     random.shuffle(pool)
 
+    if(randInfo.generate_spoiler):
+        for i in range(len(original_monster_names)):
+            new_monster=get_monster_info_by_data(monster_id=struct.unpack("<H", pool[i][0:2])[0])[ "name" ]
+            original_monster=original_monster_names[i]
+            if new_monster is not None and original_monster is not None:
+                with open(spoiler_file["path"], "a") as f:
+                    f.write(f"Monster {i+1}: {original_monster} -> {new_monster}\n")
+        with open(spoiler_file["path"], "a") as f:
+            f.write("\n------\n")
     new_entries = pool
     
     updateProgress(progress_label,randInfo)#task 7
@@ -150,17 +208,18 @@ def mod_pool(pool,randInfo=RandomizationInfo(),progress_label=None):
                 4: [10000.0, 100000.0, 94.0, 99.0],
                 5: [100000.0, 333333.0, 99.0, 100.0]
             }
-            
+            print(randInfo.generate_spoiler)
+            write_spoiler_info(randInfo, "---XP Randomization---\n\n")
             for i, monster in enumerate(new_pool):
                 choosed = random.uniform(0.0, 100.0)
                 for key in probability_stack:
-                    interval = probability_stack[key] 
-                    
+                    interval = probability_stack[key]
                     if choosed > interval[2] and choosed <= interval[3]:
                         XP = random.randint(int(interval[0]), int(interval[1]))
+                        write_spoiler_info(randInfo, f"Monster {i+1}: {get_monster_info_by_data(monster_id=int(struct.unpack('<H', monster[0:2])[0]))['name']} gives {XP} XP\n")
                         new_pool[i] = monster[:40] + XP.to_bytes(3, "little") + monster[43:]
                         break 
-                        
+            write_spoiler_info(randInfo, "\n------\n")
             updateProgress(progress_label, randInfo)
     return new_pool
 
@@ -278,6 +337,7 @@ def randomize_skill_points(progress_label,rom_data,randInfo):
         data_bin = f.read()    
     key= list(mode.keys())[0]
     levels_points_bin= [data_bin[i:i+1] for i in range(100)]
+    write_spoiler_info(randInfo, "---Skill Points Randomization---\n\n")
     match key:
         case "swap":
             random.shuffle(levels_points_bin)
@@ -287,6 +347,8 @@ def randomize_skill_points(progress_label,rom_data,randInfo):
             for i,e in enumerate(levels_points_bin):
                 points=utils.probability_stack(data)
                 levels_points_bin[i]=int.to_bytes(points,1,"big")
+    for i in range(100):
+        write_spoiler_info(randInfo, f"Level {i+1}: {int.from_bytes(levels_points_bin[i],'little')} skill points\n")
     randomized_bin_content = b"".join(levels_points_bin)
     search_pattern = data_bin
     offset = rom_data.find(search_pattern)
@@ -304,6 +366,8 @@ def randomize_items(progress_label,rom_data,randInfo):
     items_bin= [body[i*176:(i+1)*176] for i in range(128)]
     valid_indices=[i for i in range(128) if int.from_bytes(items_bin[i][0:16],"little")>0]
     valid_items=[items_bin[i] for i in valid_indices]
+    write_spoiler_info(randInfo, "---Item Randomization---\n\n")
+    write_spoiler_info(randInfo, "Coming Soon\n")
     match key:
         case "swap":
             random.shuffle(valid_items)
@@ -316,13 +380,37 @@ def randomize_items(progress_label,rom_data,randInfo):
     updateProgress(progress_label,randInfo)
 
     
-#debug function
-def identify_monster_by_indice(indice):
-    with open("valid_monsters.txt", 'r') as f:
-            lines=f.readlines()
-    for line in lines:
-        if indice==int(line.split(",")[0]):
-            print(line)
-            return
-    print("monster not found")
 
+def get_monster_info_by_data(valid_indice=None,monster_id=None,monster_name=None,HP=None,MP=None,ATK=None,DEF=None,AGI=None,WIS=None,monster_rank=None,monster_family=None,monster_size=None):
+    for monster in valid_monsters_info:
+        if valid_indice is not None and monster["indice"] != valid_indice:
+            continue
+        if monster_id is not None and monster["id"] != monster_id:
+            continue
+        if monster_name is not None and monster["name"] != monster_name:
+            continue
+        if HP is not None and monster["HP"] != HP:
+            continue
+        if MP is not None and monster["MP"] != MP:
+            continue
+        if ATK is not None and monster["ATK"] != ATK:
+            continue
+        if DEF is not None and monster["DEF"] != DEF:
+            continue
+        if AGI is not None and monster["AGI"] != AGI:
+            continue
+        if WIS is not None and monster["WIS"] != WIS:
+            continue
+        if monster_rank is not None and monster["rank"] != monster_rank:
+            continue
+        if monster_family is not None and monster["family"] != monster_family:
+            continue
+        if monster_size is not None and monster["size"] != monster_size:
+            continue
+        return monster
+    return None
+
+def write_spoiler_info(randInfo=RandomizationInfo(),content=""):
+    if randInfo.generate_spoiler:
+        with open(spoiler_file["path"], "a") as f:
+            f.write(content)
