@@ -363,8 +363,8 @@ def randomize_items(progress_label,rom_data,randInfo):
     key= list(mode.keys())[0]
     header=data_bin[:8]
     body=data_bin[8:]
-    items_bin= [body[i*176:(i+1)*176] for i in range(128)]
-    valid_indices=[i for i in range(128) if int.from_bytes(items_bin[i][0:16],"little")>0]
+    items_bin= [body[i*88:(i+1)*88] for i in range(256)]
+    valid_indices=[i for i in range(256) if int.from_bytes(items_bin[i][0:16],"little")>0]
     valid_items=[items_bin[i] for i in valid_indices]
     write_spoiler_info(randInfo, "---Item Randomization---\n\n")
     write_spoiler_info(randInfo, "Coming Soon\n")
