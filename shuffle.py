@@ -2,10 +2,20 @@ import random
 import struct
 import os
 import nicegui
+import copy
 from utils import utils
 from randomInfo import RandomizationInfo
 
 spoiler_file = {"path": "spoiler.txt"}
+monsters_bin="BtlEnmyPrm2.bin"
+with open(monsters_bin, "rb") as f:
+        data_bin = f.read()
+header = data_bin[:8]
+body = data_bin[8:]
+num_entries = len(body)
+entries = [body[i * 100 : (i + 1) * 100] for i in range(1400)]
+id_valid_indices = [i for i, e in enumerate(entries) if struct.unpack("<H", e[0:2])[0] > 0]#623
+
 valid_monsters_file = "valid_monsters.txt"
 valid_monsters_info = []
 with open(valid_monsters_file, 'r') as f:
@@ -26,6 +36,7 @@ with open(valid_monsters_file, 'r') as f:
         monster_size=parts[11]
         valid_monsters_info.append({
             "indice": valid_indice,
+            "bin_position":id_valid_indices[valid_indice],
             "id": monster_id,
             "name": monster_name,
             "HP": HP,
@@ -36,20 +47,18 @@ with open(valid_monsters_file, 'r') as f:
             "WIS": WIS,
             "rank": monster_rank,
             "family": monster_family,
-            "size": monster_size
+            "size": monster_size,
+            "bin": entries[id_valid_indices[int(valid_indice)]]
         })
-
 def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
-    # --- CONFIGURATION ---
-    input_bin = "BtlEnmyPrm2.bin"      # Original .bin file extracted from the ROM
     rom_original = "temp_uploads/dqmj2.nds"      # Original ROM (must match the one used to extract the .bin,will be removerd in the future for security reasons)
     rom_output = "dqmj2_RANDOM.nds"   # Output ROM with randomized monsters
-           # Output spoiler file (if enabled)    
-    entry_size = 100
-    header_size = 8
+           
 
     randInfo.current_progress=0
     randInfo.max_progress=determine_task_number(randInfo)
+
+    selected_monsters_info = copy.deepcopy(valid_monsters_info)
     
     if randInfo.filters is not None:
         print(f"Filters applied : {randInfo.filters}")
@@ -72,63 +81,59 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
             f.write("------\n")
             f.write("\n")
     updateProgress(progress_label,randInfo)#task 1
-
-    # Read the original .bin file and parse its entries
-    with open(input_bin, "rb") as f:
-        data_bin = f.read()
-        
-    header = data_bin[:header_size]
-    body = data_bin[header_size:]
-    num_entries = len(body) // entry_size
-    entries = [body[i * entry_size : (i + 1) * entry_size] for i in range(num_entries)]
     
     updateProgress(progress_label,randInfo)#task 2
-
-    # Filtering monster that have an ID superior to 0
-    id_valid_indices = [i for i, e in enumerate(entries) if struct.unpack("<H", e[0:2])[0] > 0]#623
-    print("Possible monsters before user filtering: "+str(len(id_valid_indices)))
-    #print(f"Monsters with ID : {len(valid_indices)} / {num_entries}")#623/1400
     
+
     updateProgress(progress_label,randInfo)#task 3
 
     #Advanced filtering based on user input
-    filtered_indices=filter_monsters(id_valid_indices,randInfo=randInfo,progress_label=progress_label,entries=entries)
-    print("Possible monsters after user filtering: "+str(len(filtered_indices)))
+    filter_monsters(selected_monsters_info,randInfo=randInfo,progress_label=progress_label)
+    print("Possible monsters after user filtering: "+str(len(selected_monsters_info)))
 
     updateProgress(progress_label,randInfo)#task 4
 
-    if len(filtered_indices)==0:
+    if len(selected_monsters_info)==0:
         print("No monsters available! Raising Exception")
         raise Exception("no monsters")
-    final_valid_indices=[id_valid_indices[indice] for indice in filtered_indices]
-    base_pool = [entries[i] for i in final_valid_indices]
 
     updateProgress(progress_label,randInfo)#task 5
 
-    base_pool=mod_pool(base_pool,randInfo,progress_label)
-    print("final possible monsters: "+str(len(base_pool)))
-    pool=list(base_pool)
+    mod_pool(selected_monsters_info,randInfo,progress_label)
 
     original_monster_names=[]
     if(randInfo.generate_spoiler):
-        for i in pool:
-           original_monster_names.append(get_monster_info_by_data(monster_id=int(struct.unpack("<H", i[0:2])[0]))["name"])
+        for i in range(len(id_valid_indices)):
+            monster=get_monster_info_by_data(monster_id=int(struct.unpack("<H", entries[id_valid_indices[i]][0:2])[0]))
+            if monster is not None:
+                original_monster_names.append(monster["name"])
+            else:
+                original_monster_names.append(None)
     updateProgress(progress_label,randInfo)#task 6
-
-    while len(pool)<1400:
-        pool.append(random.choice(base_pool))
-    random.shuffle(pool)
-
+    new_entries=[]
+    match(randInfo.monster_rand_method):
+        case "random":
+            random.shuffle(selected_monsters_info)
+            while len(selected_monsters_info)<1400:
+                selected_monsters_info.append(random.choice(selected_monsters_info))
+            new_entries=[selected_monsters_info[i]["bin"] for i in range(len(selected_monsters_info))]
+        case "size":
+            size_pools={"1":[],"2":[],"3":[]}
+            for monster_info in valid_monsters_info:
+                size_pools[monster_info["size"]].append(monster_info)
+            
+        case "rank":
+            print("")
+        case "family":
+            print("")
     if(randInfo.generate_spoiler):
-        for i in range(len(original_monster_names)):
-            new_monster=get_monster_info_by_data(monster_id=struct.unpack("<H", pool[i][0:2])[0])[ "name" ]
+        for i in range(len(id_valid_indices)):
+            new_monster=get_monster_info_by_data(monster_id=struct.unpack("<H", new_entries[id_valid_indices[i]][0:2])[0])[ "name" ]
             original_monster=original_monster_names[i]
-            if new_monster is not None and original_monster is not None:
-                with open(spoiler_file["path"], "a") as f:
+            with open(spoiler_file["path"], "a") as f:
                     f.write(f"Monster {i+1}: {original_monster} -> {new_monster}\n")
         with open(spoiler_file["path"], "a") as f:
             f.write("\n------\n")
-    new_entries = pool
     
     updateProgress(progress_label,randInfo)#task 7
 
@@ -177,28 +182,29 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
         print(f"Seed used : {randInfo.seed}")
 
 #altering the pool by modifying it's data (used for challenges)
-def mod_pool(pool,randInfo=RandomizationInfo(),progress_label=None):
-    new_pool=pool.copy()
+def mod_pool(selected_monsters_info,randInfo=RandomizationInfo(),progress_label=None):
     for mod in randInfo.mods:
         if mod=="no_flee" and "always_flee" not in randInfo.mods:
-            for i,monster in enumerate(new_pool):
-                new_pool[i]=monster[:98]+bytes([0x02])+monster[99:]
+            for i in range(len(selected_monsters_info)):
+                monster_bytes=selected_monsters_info[i]["bin"]
+                selected_monsters_info[i]["bin"]=monster_bytes[:98]+bytes([0x02])+monster_bytes[99:]
             updateProgress(progress_label,randInfo)
         if mod=="150%_stats":
-            for i,monster in enumerate(new_pool):
-                HP  = min(int(struct.unpack("<H", monster[48:50])[0] * 1.5), 9999)
-                MP  = min(int(struct.unpack("<H", monster[50:52])[0] * 1.5), 9999)
-                ATK = min(int(struct.unpack("<H", monster[52:54])[0] * 1.5), 9999)
-                DEF = min(int(struct.unpack("<H", monster[54:56])[0] * 1.5), 9999)
-                AGI = min(int(struct.unpack("<H", monster[56:58])[0] * 1.5), 9999)
-                WIS = min(int(struct.unpack("<H", monster[58:60])[0] * 1.5), 9999)
-
+            for i in range(len(selected_monsters_info)):
+                monster_bytes=selected_monsters_info[i]["bin"]
+                HP  = min(int(struct.unpack("<H", monster_bytes[48:50])[0] * 1.5), 9999)
+                MP  = min(int(struct.unpack("<H", monster_bytes[50:52])[0] * 1.5), 9999)
+                ATK = min(int(struct.unpack("<H", monster_bytes[52:54])[0] * 1.5), 9999)
+                DEF = min(int(struct.unpack("<H", monster_bytes[54:56])[0] * 1.5), 9999)
+                AGI = min(int(struct.unpack("<H", monster_bytes[56:58])[0] * 1.5), 9999)
+                WIS = min(int(struct.unpack("<H", monster_bytes[58:60])[0] * 1.5), 9999)
                 stats_pack = struct.pack("<6H", HP, MP, ATK, DEF, AGI, WIS)
-                new_pool[i] = monster[:48] + stats_pack + monster[60:]
+                selected_monsters_info[i]["bin"] = monster_bytes[:48] + stats_pack + monster_bytes[60:]
             updateProgress(progress_label,randInfo)
         if mod=="always_flee":
-            for i,monster in enumerate(new_pool):
-                new_pool[i]=monster[:98]+bytes([0x00])+monster[99:]
+            for i in range(len(selected_monsters_info)):
+                monster_bytes=selected_monsters_info[i]["bin"]
+                selected_monsters_info[i]["bin"]=monster_bytes[:98]+bytes([0x00])+monster_bytes[99:]
             updateProgress(progress_label,randInfo)
         if mod == "random_xp":
             probability_stack = {
@@ -210,56 +216,62 @@ def mod_pool(pool,randInfo=RandomizationInfo(),progress_label=None):
             }
             print(randInfo.generate_spoiler)
             write_spoiler_info(randInfo, "---XP Randomization---\n\n")
-            for i, monster in enumerate(new_pool):
+            for i in range(len(selected_monsters_info)):
                 choosed = random.uniform(0.0, 100.0)
                 for key in probability_stack:
                     interval = probability_stack[key]
                     if choosed > interval[2] and choosed <= interval[3]:
                         XP = random.randint(int(interval[0]), int(interval[1]))
-                        write_spoiler_info(randInfo, f"Monster {i+1}: {get_monster_info_by_data(monster_id=int(struct.unpack('<H', monster[0:2])[0]))['name']} gives {XP} XP\n")
-                        new_pool[i] = monster[:40] + XP.to_bytes(3, "little") + monster[43:]
+                        write_spoiler_info(randInfo, f"Monster {i+1}: {selected_monsters_info[i]['name']} gives {XP} XP\n")
+                        monster_bytes=selected_monsters_info[i]["bin"]
+                        selected_monsters_info[i]["bin"] = monster_bytes[:40] + XP.to_bytes(3, "little") + monster_bytes[43:]
                         break 
             write_spoiler_info(randInfo, "\n------\n")
             updateProgress(progress_label, randInfo)
-    return new_pool
 
 
 
-def filter_monsters(id_indices,randInfo=RandomizationInfo(),progress_label=None,entries=None):
-    monster_db="valid_monsters.txt"
-    with open(monster_db, 'r') as f:
-            lines=f.readlines()
-    if randInfo.filters==None:
-        valid_indices=[int(i.split(",")[0]) for i in lines]
-    else:
-        #filtering problematic monsters
-        valid_indices=[int(i.split(",")[0]) for i in lines]
+def filter_monsters(selected_monsters_info,randInfo=RandomizationInfo(),progress_label=None):
+    if randInfo.filters!=None:
         for key,value in randInfo.filters.items():
             if key=="rank":#exclude following ranks
-                filtered_indices=[int(i.split(",")[0]) for i in lines if i.split(",")[9].strip() not in value]
-                valid_indices=list(set(valid_indices) & set(filtered_indices))
+                to_remove=[]
+                for i in range(len(selected_monsters_info)):
+                    if selected_monsters_info[i]["rank"] in value:
+                        to_remove.append(selected_monsters_info[i])      
+                for monster_info in to_remove:
+                    selected_monsters_info.remove(monster_info)
                 updateProgress(progress_label,randInfo)
 
             if key=="family":#exclude following families
-                filtered_indices=[int(i.split(",")[0]) for i in lines if i.split(",")[10].strip() not in value]
-                valid_indices=list(set(valid_indices) & set(filtered_indices))
+                to_remove=[]
+                for i in range(len(selected_monsters_info)):
+                    if selected_monsters_info[i]["family"] in value:
+                        to_remove.append(selected_monsters_info[i])
+                for monster_info in to_remove:
+                    selected_monsters_info.remove(monster_info)
                 updateProgress(progress_label,randInfo)
 
             if key=="size":#exclude following sizes
-                filtered_indices=[int(i.split(",")[0]) for i in lines if i.split(",")[11].strip() not in value]
-                valid_indices=list(set(valid_indices) & set(filtered_indices))
+                to_remove=[]
+                for i in range(len(selected_monsters_info)):
+                    if selected_monsters_info[i]["size"] in value:
+                        to_remove.append(selected_monsters_info[i])
+                for monster_info in to_remove:
+                    selected_monsters_info.remove(monster_info)
                 updateProgress(progress_label,randInfo)
 
             if key=="special":#exlude special monsters such as arena monsters
-                filtered_indices=[]
-                for indice in valid_indices:
-                    xp=int.from_bytes(entries[id_indices[indice]][40:43],byteorder="little")
-                    if xp>0 :
-                        filtered_indices.append(indice)
-                
-                valid_indices=list(set(valid_indices) & set(filtered_indices))
+                to_remove=[]
+                for i in range(len(selected_monsters_info)):
+                    monster_bytes=selected_monsters_info[i]["bin"]
+                    xp=int.from_bytes(monster_bytes[40:43],byteorder="little")
+                    if xp==0:
+                        to_remove.append(selected_monsters_info[i])
+                for monster_info in to_remove:
+                    selected_monsters_info.remove(monster_info)
                 updateProgress(progress_label,randInfo)
-    return valid_indices
+    
 
 
 def determine_task_number(randInfo=RandomizationInfo()):
