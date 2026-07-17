@@ -119,19 +119,70 @@ def randomize_and_patch(progress_label,randInfo=RandomizationInfo()):
             new_entries=[selected_monsters_info[i]["bin"] for i in range(len(selected_monsters_info))]
         case "size":
             size_pools={"1":[],"2":[],"3":[]}
-            for monster_info in valid_monsters_info:
+            for monster_info in selected_monsters_info:
                 size_pools[monster_info["size"]].append(monster_info)
+            for pool in size_pools:
+                if len(pool)==0:
+                    print("No monsters available! Raising Exception")
+                    raise Exception("no monsters")
+            for i in range(len(entries)):
+                if i in id_valid_indices:
+                    entry_id=int.from_bytes(entries[i][0:2],"little")
+                    monster_info=get_monster_info_by_data(monster_id=entry_id)
+                    if monster_info is None:
+                        new_entries.append(entries[i])
+                        continue
+                    new_monster_info=random.choice(size_pools[monster_info["size"]])
+                    new_entries.append(new_monster_info["bin"])
+                else:
+                    new_entries.append(entries[i])
             
         case "rank":
-            print("")
+            rank_pools={"???":[],"X":[],"S":[],"A":[],"B":[],"C":[],"D":[],"E":[],"F":[],}
+            for monster_info in selected_monsters_info:
+                rank_pools[monster_info["rank"]].append(monster_info)
+            for pool in rank_pools:
+                if len(pool)==0:
+                    print("No monsters available! Raising Exception")
+                    raise Exception("no monsters")
+            for i in range(len(entries)):
+                if i in id_valid_indices:
+                    entry_id=int.from_bytes(entries[i][0:2],"little")
+                    monster_info=get_monster_info_by_data(monster_id=entry_id)
+                    if monster_info is None:
+                        new_entries.append(entries[i])
+                        continue
+                    new_monster_info=random.choice(rank_pools[monster_info["rank"]])
+                    new_entries.append(new_monster_info["bin"])
+                else:
+                    new_entries.append(entries[i])
         case "family":
-            print("")
+            family_pools={"Slime":[],"Dragon":[],"Material":[],"Demon":[],"Beast":[],"Nature":[],"Undead":[],"Boss":[]}
+            for monster_info in selected_monsters_info:
+                family_pools[monster_info["family"]].append(monster_info)
+            for pool in family_pools:
+                if len(pool)==0:
+                    print("No monsters available! Raising Exception")
+                    raise Exception("no monsters")
+            for i in range(len(entries)):
+                if i in id_valid_indices:
+                    entry_id=int.from_bytes(entries[i][0:2],"little")
+                    monster_info=get_monster_info_by_data(monster_id=entry_id)
+                    if monster_info is None:
+                        new_entries.append(entries[i])
+                        continue
+                    new_monster_info=random.choice(family_pools[monster_info["family"]])
+                    new_entries.append(new_monster_info["bin"])
+                else:
+                    new_entries.append(entries[i])
     if(randInfo.generate_spoiler):
         for i in range(len(id_valid_indices)):
-            new_monster=get_monster_info_by_data(monster_id=struct.unpack("<H", new_entries[id_valid_indices[i]][0:2])[0])[ "name" ]
+            new_monster=get_monster_info_by_data(monster_id=struct.unpack("<H", new_entries[id_valid_indices[i]][0:2])[0])
+            if new_monster is None:
+                continue
             original_monster=original_monster_names[i]
             with open(spoiler_file["path"], "a") as f:
-                    f.write(f"Monster {i+1}: {original_monster} -> {new_monster}\n")
+                    f.write(f"Monster {i+1}: {original_monster} -> {new_monster['name']}\n")
         with open(spoiler_file["path"], "a") as f:
             f.write("\n------\n")
     

@@ -65,6 +65,18 @@ def change_skill_point_mode(radio_value):
             randInfo.skill_points_mode={"random":""}
     print("Current Skill Point Mode="+str(randInfo.skill_points_mode))
 
+def change_monster_randomization_method(radio_value):
+    match radio_value.value:
+        case 1:
+            randInfo.monster_rand_method="random"
+        case 2:
+            randInfo.monster_rand_method="size"
+        case 3:
+            randInfo.monster_rand_method="rank"
+        case 4:
+            randInfo.monster_rand_method="family"
+    print("Current Monster Randomization Method="+str(randInfo.monster_rand_method))
+
 def change_item_mode(value):
     if value == True:
         randInfo.item_mode={"swap":""}
@@ -182,6 +194,8 @@ def monsters_tab(monsters):
                                                                          "1 000 to 10 000 XP => 10%",
                                                                          "10 000 to 100 000 XP => 5%",
                                                                          "100 000 to 333 333 XP => 1%"])).classes(STYLES["dqmj2-button"]+" rounded-xl")
+                ui.radio({1: 'Fully randomize monsters', 2: 'Randomize same sizes', 3: 'Randomize same ranks',4:'Randomize same families'},
+                value=2,on_change=lambda e:change_monster_randomization_method(e)).classes("bg-blue-900 text-white rounded-lg border-2 border-black")
                 with ui.expansion('Filter Ranks', icon='font_download',caption="Include or exclude monster ranks you want").classes('w-full section-banner text-white rounded'):
                     with ui.row().classes('w-full'):
                         ui.checkbox("???", value=True, on_change=lambda e: change_filter("rank","???")).classes(STYLES["dqmj2-button"])

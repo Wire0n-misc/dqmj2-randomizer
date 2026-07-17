@@ -35,29 +35,55 @@ Also for now it only works with EU versions of DQMJ2.
 
 ## ✨Features
 
-- Seed : choose the seed used for randomization. If none,then a random one will be choosed.
+- Seed : choose the seed used for randomization. If none,then a random one will be choosed !
 
-- Monster randomization: randomize monsters encounters.
+- Monster randomization: randomize monsters encounters !
+  
+  - Fully randomize
+  
+  - Randomize same sizes
+  
+  - Randomize same ranks
+  
+  - Randomize same families
 
-- Rank filtering : choose which monsters can appear based on selected ranks.
+- Monster filtering: filter randomized monsters by criterias !
+  
+  - Rank filtering
+  
+  - Family filtering
+  
+  - Size filtering
 
-- Family filtering: choose which monsters can appear based on selected families.
+- Flee and Scout : enable flee and scout for all battles !
 
-- Size filtering: choose which monsters can appear based on selected sizes.
+- Spoiler file: generate a .txt file containing resulting randomization data !
 
-- XP randomization: randomize XP given by each monster.
+- Level Up XP randomization or swap (XP curves): randomize XP required for gaining levels !
+  
+  - Swap level up curves
+  
+  - Randomize level up XP by variation (110 to 200%)
 
-- Level Up XP randomization or swap (XP curves): randomize XP required for gaining levels.
+- Skill Point Randomization: randomize skill points given after level up!
+  
+  - Swap skill points levels
+  
+  - Randomize skill points
+
+- Item Randomization: randomize what items do!
 
 - Challenges:
   
   - No flee : Make it impossible to flee any battle!
   
-  - Stronger monsters : Every enemy monster receive a 50% stats raise (HP,MP,ATK,DEF,AGI,WIS)
+  - Stronger monsters : Every enemy monster receive a 50% stats raise !(HP,MP,ATK,DEF,AGI,WIS)
 
 - Other features coming soon!
 
 ## 🚨Important notes
+
+
 
 In most cases, even if big monsters overlap other slots, it isn't an issue since the game can handle it, despite being a visual mess. But there is a few cases where a specific configuration might be problematic because when you're attacking enemies the game will crash.I noticed that when it happens there is always a giant monster involved. Hopefully I found a turnaround : battling with only one monster will give game enough memory space to not crash.
 

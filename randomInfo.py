@@ -6,7 +6,7 @@ class RandomizationInfo:
         self.seed=0
         self.generate_spoiler=True
         self.mods=["always_flee"]
-        self.monster_rand_method="random"
+        self.monster_rand_method="size"
         self.level_up_mode={}
         self.skill_points_mode={}
         self.item_mode={}
