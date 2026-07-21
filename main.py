@@ -12,6 +12,7 @@ STYLES={
 
 UPLOAD_DIR = Path(__file__).parent / 'temp_uploads'
 UPLOAD_DIR.mkdir(exist_ok=True)
+app.add_static_files('/images', 'images')
 
 output_dir= Path(__file__).parent / 'output'
 xp_variance=[110]
@@ -294,10 +295,10 @@ def root():
         with ui.checkbox("Generate Spoiler File", value=randInfo.generate_spoiler, on_change=lambda e: setattr(randInfo, 'generate_spoiler', e.value)).classes(STYLES["dqmj2-button"]):
                     ui.tooltip("Generate a spoiler file with the randomized information").classes("bg-cyan")
         with ui.tabs().classes('w-full') as tabs:
-            monsters = ui.tab('Monsters').classes(STYLES["dqmj2-button"])
-            level_up=ui.tab('Level Up').classes(STYLES["dqmj2-button"])
-            skill_points=ui.tab("Skill Points").classes(STYLES["dqmj2-button"])
-            items=ui.tab("Items").classes(STYLES["dqmj2-button"])
+            monsters = ui.tab('Monsters',icon="img:/images/monsters.png").classes(STYLES["dqmj2-button"])
+            level_up=ui.tab('Level Up',icon="img:/images/up.png").classes(STYLES["dqmj2-button"])
+            skill_points=ui.tab("Skill Points",icon="img:/images/skillpoint.png").classes(STYLES["dqmj2-button"])
+            items=ui.tab("Items",icon="img:/images/items.png").classes(STYLES["dqmj2-button"])
             challenges = ui.tab('Challenges').classes(STYLES["dqmj2-button"])
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
             monsters_tab(monsters)
