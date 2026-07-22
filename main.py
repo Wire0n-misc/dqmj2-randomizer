@@ -85,6 +85,13 @@ def change_item_mode(value):
         randInfo.item_mode={}
     print("Current Item Mode="+str(randInfo.item_mode))
 
+def change_skills_mode(value):
+    if value == True:
+        randInfo.skills_mode={"swap":""}
+    else:
+        randInfo.skills_mode={}
+    print("Current Skills Mode="+str(randInfo.skills_mode))
+
 def update_xp_chart(chart,value):
     chart._props['options'] = get_chart_opts(value/100)
     chart.update()
@@ -241,6 +248,11 @@ def skill_points_tab(skill_points):
     with ui.tab_panel(skill_points).classes("bg-black"):
          ui.radio({1: 'Do not randomize Skill Points', 2: 'Swap Skill Points Levels', 3: 'Randomize Skill Points'},value=1,on_change=lambda e:change_skill_point_mode(e)).classes("bg-blue-900 text-white rounded-lg border-2 border-black")
 
+def skills_tab(items):
+    with ui.tab_panel(items).classes("bg-black"):
+        with ui.checkbox("Randomize Skillsets", value=False, on_change=lambda e: change_skills_mode(e.value)).classes(STYLES["dqmj2-button"]):
+            ui.tooltip("Randomizes what every skillset do.").classes("bg-cyan")
+
 def challenge_tab(challenges):
     with ui.tab_panel(challenges).classes("bg-black"):
         with ui.checkbox("No flee challenge", value=False, on_change=lambda e: change_mods("no_flee")).classes(STYLES["dqmj2-button"]):
@@ -252,6 +264,8 @@ def item_tab(items):
     with ui.tab_panel(items).classes("bg-black"):
         with ui.checkbox("Randomize Items", value=False, on_change=lambda e: change_item_mode(e.value)).classes(STYLES["dqmj2-button"]):
             ui.tooltip("Randomizes what every item in the game will do.").classes("bg-cyan")
+
+
 @ui.page('/')
 def root():
     app.add_static_files('/static', 'fonts')
@@ -297,13 +311,15 @@ def root():
         with ui.tabs().classes('w-full') as tabs:
             monsters = ui.tab('Monsters',icon="img:/images/monsters.png").classes(STYLES["dqmj2-button"])
             level_up=ui.tab('Level Up',icon="img:/images/up.png").classes(STYLES["dqmj2-button"])
+            skills=ui.tab("Skillsets",icon="img:/images/skills.png").classes(STYLES["dqmj2-button"])
             skill_points=ui.tab("Skill Points",icon="img:/images/skillpoint.png").classes(STYLES["dqmj2-button"])
             items=ui.tab("Items",icon="img:/images/items.png").classes(STYLES["dqmj2-button"])
-            challenges = ui.tab('Challenges').classes(STYLES["dqmj2-button"])
+            challenges = ui.tab('Challenges',icon="img:/images/challenge.png").classes(STYLES["dqmj2-button"])
         with ui.tab_panels(tabs, value=monsters).classes('w-full'):
             monsters_tab(monsters)
             levelup_tab(level_up)
             skill_points_tab(skill_points)
+            skills_tab(skills)
             item_tab(items)
             challenge_tab(challenges)
             

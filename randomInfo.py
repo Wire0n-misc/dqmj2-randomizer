@@ -9,4 +9,5 @@ class RandomizationInfo:
         self.monster_rand_method="size"
         self.level_up_mode={}
         self.skill_points_mode={}
+        self.skills_mode={}
         self.item_mode={}
